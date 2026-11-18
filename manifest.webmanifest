@@ -1,7 +1,7 @@
 {
-  "name": "网约车台账",
-  "short_name": "台账",
-  "description": "按笔记录流水与支出，其余自动算；数据只存本机。",
+  "name": "WainTaxi",
+  "short_name": "WainTaxi",
+  "description": "网约车也是生意，就得有账。数据只存本机。",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
