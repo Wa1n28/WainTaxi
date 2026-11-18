@@ -4,7 +4,7 @@
 
 一个给网约车司机用的**纯本机记账网页**：按笔记录流水和支出，其余（汇总、周期报告、摊销、净利）全部自动算。数据只存在你自己的浏览器里，不上传任何服务器。
 
-- 在线地址：<https://fwwcn.github.io/waintaxi/>
+- 在线地址：<https://fwwcn.github.io/WainTaxi/>
 - 作者：闲驰京尘支架人 [@Wa1n28](https://github.com/fwwcn)
 
 ---
