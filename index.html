@@ -1,0 +1,1613 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F6E56">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>WainTaxi</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#f4f6f4;--card:#fff;--line:#e2e7e2;--text:#1e2420;--muted:#6c766e;--brand:#0F6E56;--soft:#E1F5EE;--blue:#185FA5;--danger:#A32D2D;--r:12px}
+@media (prefers-color-scheme:dark){:root{--bg:#151917;--card:#202622;--line:#343c36;--text:#eef1ed;--muted:#9ba59c;--brand:#5DCAA5;--soft:#1d3a30;--blue:#85B7EB;--danger:#F09595}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;padding-bottom:80px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:480px;margin:0 auto;padding:12px 12px 24px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 2px 12px}
+.top h1{margin:0;font-size:18px;font-weight:600;letter-spacing:.5px}
+.top h1 .ver{font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0;margin-left:6px;vertical-align:middle}
+.top .sub{font-size:12px;color:var(--muted)}
+.top .sign{font-size:11px;color:var(--muted);text-align:right;line-height:1.5;white-space:nowrap}
+.notice{background:#FFF6E5;color:#7a5210;border:1px solid #f0d9a8;border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:12px;cursor:pointer}
+.notice.bad{background:#FCEBEB;color:#8f2626;border-color:#f0b9b9}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 12px;font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.5px}
+.row{display:flex;gap:8px;align-items:center;min-width:0}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+label.f{display:block;font-size:12px;color:var(--muted);margin:0 0 4px}
+input,select,textarea{font:inherit;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:10px 12px;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--brand)}
+input[type=date],input[type=month],input[type=time]{min-height:42px}
+.btn{font:inherit;min-height:44px;padding:10px 16px;border-radius:9px;border:1px solid var(--line);background:var(--card);color:var(--text);cursor:pointer}
+.btn:active{opacity:.75}
+.btn.primary{background:#0F6E56;border-color:#0F6E56;color:#fff}
+.btn.ghost{background:transparent}
+.btn.danger{color:var(--danger);border-color:var(--danger)}
+.btn.sm{min-height:34px;padding:5px 10px;font-size:13px}
+.btn.full{width:100%}
+.chip{min-height:38px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;font-size:14px;cursor:pointer}
+.chip.on{background:var(--soft);border-color:var(--brand);color:var(--brand);font-weight:600}
+.chip.mini{min-height:30px;padding:3px 10px;font-size:12px}
+/* 封存只读：禁用态要一眼能看出来，避免按钮还是亮绿色像能点 */
+button:disabled,input:disabled,select:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}
+button:disabled:hover,input:disabled:hover,select:disabled:hover{opacity:.42}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.vehgrid{display:grid;grid-template-columns:104px minmax(0,1fr) 92px;gap:8px}
+.vehgrid input,.vehgrid select{padding:10px 8px}
+.grid3{display:grid;grid-template-columns:1.25fr 1.25fr 0.6fr;gap:8px}
+.kv{background:var(--bg);border-radius:9px;padding:10px}
+.kv .k{font-size:12px;color:var(--muted)}
+.kv .v{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.kv .v small{font-size:12px;font-weight:400;color:var(--muted)}
+.hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.6}
+.item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.item:last-child{border-bottom:none}
+.item .t{color:var(--muted);font-size:12px;min-width:42px}
+.item .d{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .m{font-variant-numeric:tabular-nums;font-weight:600}
+.item .del{color:var(--danger);border:none;background:none;font:inherit;font-size:13px;cursor:pointer;padding:4px 6px}
+.empty{color:var(--muted);font-size:13px;text-align:center;padding:14px 0}
+.bar{height:8px;border-radius:5px;background:var(--bg);overflow:hidden;margin-top:5px}
+.bar i{display:block;height:100%;background:#0F6E56}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:7px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:400;font-size:12px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:10}
+nav button{flex:1 1 0;min-width:0;min-height:56px;border:none;background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;padding:6px 0}
+nav button.on{color:var(--brand);font-weight:600}
+nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:var(--brand);margin:0 auto 3px}
+.hide{display:none!important}
+.split{border-top:1px solid var(--line);margin:12px 0}
+.tag{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-left:6px}
+.actbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.actbar .btn{padding:5px 9px;min-height:30px;font-size:12px}
+.modal{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:30}
+.modal .sheet{background:var(--card);width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));max-height:75vh;overflow:auto}
+.modal .sheet h3{margin:0 0 12px;font-size:15px;font-weight:600}
+.modal .warn{background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:13px;line-height:1.75;margin-bottom:12px}
+.modal .warn b{color:var(--danger)}
+.vehPickBtn{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;text-align:left;min-height:42px;padding:6px 10px;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--text);font:inherit;font-size:14px;cursor:pointer}
+.vehPickBtn:active{opacity:.75}
+.vehPickBtn .vp-sub{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.vehOpt{display:flex;align-items:center;gap:8px;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer}
+.vehOpt:last-child{border:none}
+.vehOpt.on{color:var(--brand);font-weight:600}
+/* 两个净利口径：含义列要能换行，不然窄屏整张表撑破页宽 */
+.nettable{table-layout:fixed}
+.nettable th:nth-child(1),.nettable td:nth-child(1){width:27%}
+.nettable th:nth-child(2),.nettable td:nth-child(2){width:23%}
+.nettable th:nth-child(3),.nettable td:nth-child(3){width:50%}
+.nettable td.ntxt{white-space:normal;text-align:left;line-height:1.55}
+.wdptable{table-layout:fixed}
+.wdptable th,.wdptable td{white-space:normal;word-break:break-all;font-size:12px}
+/* 固定资产明细：手机屏幕窄，表格改一条一条的卡片，不再超出页宽 */
+.alist{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.arow{padding:10px 11px;border-bottom:1px solid var(--line)}
+.arow:last-child{border-bottom:none}
+.arow .atop{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:14px}
+.arow .aname{font-weight:600;word-break:break-all}
+.arow .atop .tag{margin-left:0}
+.arow .ameta{font-size:12px;color:var(--muted);margin-top:3px}
+.arow .abtm{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;font-variant-numeric:tabular-nums}
+.arow .abtm .amt{font-weight:600;font-size:15px}
+.arow .abtm .act{margin-left:auto;display:flex;align-items:center;gap:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div><h1>WainTaxi<span class="ver">v7.03</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
+  </div>
+  <div id="notice"></div>
+
+  <section id="tab-add">
+    <div class="card">
+      <div class="row wrap">
+        <div style="flex:1 1 38%;min-width:0"><button class="vehPickBtn" id="vehPick"></button></div>
+        <div class="row" style="flex:1 1 56%;min-width:0">
+          <button class="btn sm" id="dPrev" style="padding:5px 6px">&lt;</button>
+          <input type="date" id="dPick" class="grow" style="width:auto;min-width:0">
+          <button class="btn sm" id="dNext" style="padding:5px 6px">&gt;</button>
+        </div>
+      </div>
+      <div class="hint" id="dLabel"></div>
+      <div id="noVehBar" class="notice bad hide">你还没有车。先到「资产」页添加车辆信息，再开始经营记账。</div>
+      <div id="viewRoBar" class="notice bad hide"></div>
+    </div>
+
+    <div class="card" data-entry>
+      <h2>工作时段（一天可分多段）</h2>
+      <div class="grid3">
+        <div><label class="f">出车</label><div class="actbar"><input type="text" inputmode="numeric" id="tStart" class="grow" placeholder="07:30" maxlength="5"><button class="btn sm" id="btnStart" title="第一次点带入现在时间">现在</button></div></div>
+        <div><label class="f">收车</label><div class="actbar"><input type="text" inputmode="numeric" id="tEnd" class="grow" placeholder="18:00" maxlength="5"><button class="btn sm" id="btnEnd" title="第一次点带入现在时间">现在</button></div></div>
+        <div><label class="f">里程 km</label><input type="number" inputmode="decimal" id="tKm" placeholder="0"></div>
+      </div>
+      <button class="btn primary full" id="btnShift" style="margin-top:12px">保存这一段</button>
+      <div class="split"></div>
+      <div id="shiftItems"></div>
+      <div class="hint" id="workHint"></div>
+    </div>
+
+    <div class="card" data-entry>
+      <h2>记一笔流水</h2>
+      <label class="f">平台</label>
+      <div class="row wrap" id="flowPlatforms" style="margin-bottom:10px"></div>
+      <div class="grid">
+        <div><label class="f">金额</label><input type="number" inputmode="decimal" id="fAmount" placeholder="0.00" step="0.01"></div>
+        <div><label class="f">单量（必填）</label><input type="number" inputmode="numeric" id="fOrders" placeholder="0"></div>
+      </div>
+      <button class="btn primary full" id="btnFlow" style="margin-top:12px">保存流水</button>
+      <div class="hint">有流水必有单量，单量留空保存不了。金额框自动清空并保持焦点，可连续录同一平台的下一笔。</div>
+    </div>
+
+    <div class="card" data-entry>
+      <h2>记一笔（支出 / 收入）</h2>
+      <div class="row wrap" style="margin-bottom:10px">
+        <button class="chip mini" id="kindExpense">支出</button>
+        <button class="chip mini" id="kindIncome">收入</button>
+      </div>
+      <label class="f">类型</label>
+      <div class="row wrap" id="costTypes" style="margin-bottom:10px"></div>
+      <div class="row">
+        <div class="grow"><label class="f">金额</label><input type="number" inputmode="decimal" id="cAmount" placeholder="0.00" step="0.01"></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <div class="grow"><label class="f">备注（选填）</label><input type="text" id="cNote" placeholder="例如：顺风车收入 / 停车票号" maxlength="60"></div>
+      </div>
+      <button class="btn primary full" id="btnCost" style="margin-top:12px">保存</button>
+      <div class="hint">收入用于赔款、退款、补贴、其他收入等额外进账；<strong>记在这里的就只进经营账</strong>，跟资产有关的钱到「车辆 → 资产流水」另记。提现走「车辆 → 提现账本」。类型不够用去「设置」里加。备注会跟这一笔一起存。</div>
+    </div>
+
+    <div class="card">
+      <h2>当日合计（自动）</h2>
+      <div class="grid" id="sumBox"></div>
+      <div class="split"></div>
+      <div id="dayItems"></div>
+    </div>
+  </section>
+
+  <section id="tab-list" class="hide">
+    <div class="card">
+      <h2>当前车辆</h2>
+      <div class="row wrap" id="listVehChips"></div>
+      <div class="hint" id="listVehInfo"></div>
+    </div>
+    <div class="card">
+      <h2>按日汇总</h2>
+      <div class="hint" style="margin:0 0 8px">点日期跳到「记一笔」，拉到最下面看当天全部明细。每页 30 天。</div>
+      <div id="dayList"></div>
+    </div>
+  </section>
+
+  <section id="tab-asset" class="hide">
+    <div id="assetWrap"></div>
+  </section>
+
+  <section id="tab-stats" class="hide">
+    <div class="card">
+      <h2>当前车辆</h2>
+      <div class="row wrap" id="vehicleChips"></div>
+      <div class="hint" id="vehicleInfo"></div>
+    </div>
+    <div class="card">
+      <h2>报告周期</h2>
+      <div class="row wrap" id="repModes">
+        <button class="chip mini" data-mode="day">日结</button>
+        <button class="chip mini" data-mode="week">周结</button>
+        <button class="chip mini on" data-mode="month">月结</button>
+        <button class="chip mini" data-mode="quarter">季结</button>
+        <button class="chip mini" data-mode="year">年结</button>
+        <button class="chip mini" data-mode="life">总账</button>
+        <button class="chip mini" data-mode="custom">自定义</button>
+      </div>
+      <div class="row wrap" id="repInputs" style="margin-top:10px"></div>
+      <div class="hint" id="repRange" style="margin-bottom:10px"></div>
+      <div class="grid" id="monthBox"></div>
+      <div class="split"></div>
+      <div id="netBox"></div>
+      <div class="split"></div>
+      <div id="monthPlatform"></div>
+    </div>
+    <div class="card">
+      <h2 id="rotateTitle">平台轮换</h2>
+      <div class="hint" id="rotateHint" style="margin:0 0 10px"></div>
+      <div id="rotateBox"></div>
+    </div>
+  </section>
+
+  <section id="tab-set" class="hide">
+    <div class="card">
+      <h2>数据备份</h2>
+      <div class="hint" id="backupState" style="margin:0 0 12px"></div>
+      <div class="row wrap">
+        <button class="btn primary" id="btnBackup">导出备份</button>
+        <button class="btn" id="btnRestore">导入恢复</button>
+      </div>
+      <input type="file" id="fileIn" accept=".json,application/json" class="hide">
+      <div class="hint">数据只存在这台设备的浏览器里。<strong>清除浏览器数据会丢</strong>，建议每周点一次「导出备份」，把 JSON 文件存到手机下载目录。</div>
+    </div>
+    <div class="card">
+      <h2>平台目录（改名 / 排序 / 启停）</h2>
+      <div id="platAdmin"></div>
+      <div class="row wrap" style="margin-top:10px">
+        <input type="text" id="newPlat" class="grow" placeholder="新平台名称" style="flex:1 1 140px">
+        <button class="btn primary" id="btnAddPlat">添加</button>
+        <button class="btn" id="btnCleanPlat">清理无流水的平台</button>
+      </div>
+      <div class="hint">点平台名可改名，↑↓ 调顺序，右边按钮启停、删除。停用不会删历史记录，只是不再出现在「记一笔流水」的平台选项里；有历史流水的平台不能删，只能停用。</div>
+    </div>
+    <div class="card">
+      <h2>支出类型</h2>
+      <div id="typeAdmin"></div>
+      <div class="row" style="margin-top:10px">
+        <input type="text" id="newType" class="grow" placeholder="新支出类型名称">
+        <button class="btn" id="btnAddType">添加</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>收入类型</h2>
+      <div id="incomeTypeAdmin"></div>
+      <div class="row" style="margin-top:10px">
+        <input type="text" id="newIncomeType" class="grow" placeholder="新收入类型名称，如 赔款 / 退款">
+        <button class="btn" id="btnAddIncomeType">添加</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>关于 / 危险操作</h2>
+      <div class="hint" style="margin:0 0 12px">单文件版，无外部依赖、不联网、不上传任何记录。用网址打开并「添加到主屏幕」后，可全屏、离线使用。</div>
+      <div class="hint" id="storageState" style="margin:0 0 12px"></div>
+      <button class="btn danger full" id="btnClear">清空全部数据</button>
+    </div>
+  </section>
+
+</div>
+
+<nav>
+  <button data-tab="asset">车辆</button>
+  <button data-tab="list">明细</button>
+  <button data-tab="add" class="on"><span class="dot"></span>记一笔</button>
+  <button data-tab="stats">统计</button>
+  <button data-tab="set">设置</button>
+</nav>
+
+<script>
+var KEY='waintaxi.v2';
+var DEF_PLAT=[{id:'p1',name:'滴滴',on:true}];
+var DEF_COST=['停车','充电','高速','罚款','电费','电话费','保养','其他'];
+var DEF_INCOME=['赔款','退款','补贴','其他收入'];
+var ASSET_CATS=['整车','随车','修缮','保险'];   // 投入类默认类别：整车+随车一篮，其余各自按天摊
+var INFLOW_CATS=['赔款','变卖','退款','残值','退押金']; // 收回类默认类别：抵扣整车+随车篮子后再摊
+function assetCatsOf(v){var a=(v&&v.assetCats)||[];return a.length?a:ASSET_CATS.slice()}
+function inflowCatsOf(v){var a=(v&&v.inflowCats)||[];return a.length?a:INFLOW_CATS.slice()}
+var VEH_PRESET=[
+  {id:'v_qin',plate:'京AEB9506',model:'比亚迪秦LEV545超越',sealed:false},
+  {id:'v_ark',plate:'京BD65672',model:'极狐αs5',sealed:true}
+];
+var DEFAULT={v:2,activeVehicleId:'',vehicles:[],lastBackup:null};
+var S,curDate,selPid=null,selType='停车',selKind='支出',storageOK=true,reportMode='month',reportFrom='',reportTo='';
+var viewId='';   // 「当前查看车」：空=跟随当前经营车。查看可与经营不同（封存车只读查看），绝不改变 activeVehicleId
+var repDay='',repWeek='',repMonth='',repYear='',repQ=1;   // 统计各周期输入的选择（空=默认今天）
+var _emptyVeh=null;   // 无账套时的临时占位（不落盘），保证 V().xxx 不崩
+
+function $(id){return document.getElementById(id)}
+function pad(n){return String(n).padStart(2,'0')}
+function dstr(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function today(){return dstr(new Date())}
+function parseD(s){return new Date(s+'T00:00:00')}
+function shiftD(s,n){var d=parseD(s);d.setDate(d.getDate()+n);return dstr(d)}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function nowHM(){var d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())}
+// 24 小时制时间规范化：容错 7:30 / 0730 / 7：30 / 23:59，返回 HH:MM 或 null
+function normHM(v){
+  if(v==null)return null;
+  var s=String(v).trim().replace(/：/g,':').replace(/[·.\-]/g,':');
+  var m=s.match(/^(\d{1,2}):?(\d{2})$/);
+  if(!m)return null;
+  var h=parseInt(m[1],10),mi=parseInt(m[2],10);
+  if(h>23||mi>59)return null;
+  return pad(h)+':'+pad(mi);
+}
+function num(v){var n=parseFloat(v);return isFinite(n)?n:0}
+function m2(n){return (Math.round(n*100)/100).toFixed(2)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function weekday(s){return '日一二三四五六'[parseD(s).getDay()]}
+
+function blankVehicle(p){
+  return {id:p.id,plate:p.plate||'',model:p.model||'',sealed:!!p.sealed,
+    config:{prepAnchor:0,realStart:'',weekStart:'Mon',quarterMode:'natural'},
+    platforms:clone(DEF_PLAT),costTypes:clone(DEF_COST),incomeTypes:clone(DEF_INCOME),
+    assetCats:ASSET_CATS.slice(),inflowCats:INFLOW_CATS.slice(),
+    vehicle:{plate:p.plate||'',model:p.model||'',property:'buy',startDate:'',endDate:'',maintDate:'',buyDate:'',scrapDate:'',lifeMonths:0,insStart:'',insEnd:'',insPremium:0,insPaidDate:''},
+    assets:[],insurances:[],prepLedger:[],withdrawals:[],recon:{},days:{}};
+}
+function freshState(){
+  // 初始状态：没有任何账套、车辆信息、流水。用户通过「导入建账文件」或手动新建来建账。
+  return clone(DEFAULT);
+}
+function hasVehicles(){return !!(S&&S.vehicles&&S.vehicles.length)}
+function activeVehicle(s){
+  s=s||S;
+  var list=(s&&s.vehicles)||[];
+  for(var i=0;i<list.length;i++){if(list[i].id===s.activeVehicleId)return list[i]}
+  if(list.length)return list[0];
+  // 无账套：返回临时占位，避免 V().xxx 崩溃（只读展示，不写入持久化数据）
+  if(!_emptyVeh)_emptyVeh=blankVehicle({id:'__empty__',plate:'',model:'',sealed:false});
+  return _emptyVeh;
+}
+function V(){return activeVehicle(S)}
+/* 当前查看车：统计/明细/日报看的是它；录入永远写 V()（当前经营车），两者可以不同。
+   viewId 指向的车若已不存在（导入/删车后）自动回落到经营车。 */
+function statV(){
+  if(viewId){
+    var vs=(S&&S.vehicles)||[];
+    for(var i=0;i<vs.length;i++)if(vs[i].id===viewId)return vs[i];
+    viewId='';
+  }
+  return V();
+}
+/* 封存＝封账：三本账一律只读，只有「车辆」页解封后才能再记。 */
+function guardRO(v,what){
+  if(v&&v.sealed){alert('「'+(v.plate||'这辆车')+'」已封存（封账），'+(what||'记账')+'需先到「车辆」里解封。');return true}
+  return false;
+}
+function viewReadOnly(){var a=statV(),b=V();return a.sealed||a.id!==b.id}
+/* 录入前统一守卫：经营车必须未封存，且当前查看的必须是经营车本身（避免看 A 车却记到 B 车）。 */
+function canWrite(){
+  if(!hasVehicles()){alert('先在「车辆」里建一辆车');return false}
+  var s=statV(),v=V();
+  if(guardRO(s,'记账'))return false;   // 查看的车已封存：直接给封账提示
+  if(guardRO(v,'记账'))return false;   // 经营车已封存（异常态兜底）
+  if(s.id!==v.id){alert('当前查看的是「'+(s.plate||'别的车')+'」，这里录入只会记到当前经营车「'+(v.plate||'')+'」。要给它记账请先到「车辆」里切换经营。');return false}
+  return true;
+}
+function viewDay(s){
+  var v=statV(),d=(v&&v.days&&v.days[s])||{shifts:[],enabled:[],flows:[],costs:[],note:''};
+  if(!Array.isArray(d.flows))d.flows=[];
+  if(!Array.isArray(d.costs))d.costs=[];
+  if(!Array.isArray(d.shifts))d.shifts=[];
+  return d;
+}
+// 访问器镜像：让原有 S.days / S.platforms 等写法不动，实际读写当前账套
+function bindMirror(s){
+  ['days','platforms','costTypes','incomeTypes','vehicle','assets','insurances','prepLedger','withdrawals','recon','config'].forEach(function(name){
+    Object.defineProperty(s,name,{configurable:true,enumerable:false,
+      get:function(){var v=activeVehicle(s);return v?v[name]:null},
+      set:function(x){var v=activeVehicle(s);if(v)v[name]=x}});
+  });
+  return s;
+}
+function normDays(days){
+  if(!days||typeof days!=='object')return {};
+  Object.keys(days).forEach(function(k){
+    var x=days[k];if(!x||typeof x!=='object')return;
+    if(!Array.isArray(x.flows))x.flows=[];
+    if(!Array.isArray(x.costs))x.costs=[];
+    if(!Array.isArray(x.shifts)){
+      // 旧结构单段 start/end/km -> 迁移成一条工作时段
+      x.shifts=(x.start||x.end||num(x.km))?[{id:uid(),t:x.start||'',start:x.start||'',end:x.end||'',km:num(x.km)}]:[];
+    }
+    x.costs.forEach(function(c){if(!c.kind)c.kind='支出';if(typeof c.note!=='string')c.note=''});
+    x.flows.forEach(function(f){if(f.orders===undefined)f.orders=0});
+    if(!Array.isArray(x.enabled))x.enabled=[];
+  });
+  return days;
+}
+function probe(){try{localStorage.setItem('__wt_probe','1');localStorage.removeItem('__wt_probe');storageOK=true}catch(e){storageOK=false}}
+function load(){
+  try{var x=localStorage.getItem('__wt_s2');if(x){var o=JSON.parse(x);return norm(o)}}catch(e){}
+  try{var y=localStorage.getItem(KEY);if(y){var o2=JSON.parse(y);return norm(o2)}}catch(e){}
+  return bindMirror(freshState());
+}
+function norm(o){
+  var s=freshState();
+  if(o&&o.v>=2&&Array.isArray(o.vehicles)&&o.vehicles.length){
+    s.vehicles=o.vehicles.map(function(v,i){
+      var p=VEH_PRESET.filter(function(z){return z.id===(v&&v.id)})[0]||
+        {id:(v&&v.id)||('v'+(i+1)),plate:(v&&v.plate)||'',model:(v&&v.model)||'',sealed:!!(v&&v.sealed)};
+      var b=blankVehicle(p);
+      if(v.config)b.config=Object.assign(b.config,v.config||{});
+      if(Array.isArray(v.platforms)&&v.platforms.length)b.platforms=v.platforms;
+      if(Array.isArray(v.costTypes)&&v.costTypes.length)b.costTypes=v.costTypes.filter(function(t){return t!=='提现'});
+      if(Array.isArray(v.incomeTypes)&&v.incomeTypes.length)b.incomeTypes=v.incomeTypes;
+      if(v.vehicle&&typeof v.vehicle==='object')b.vehicle=Object.assign(b.vehicle,v.vehicle);
+      if(Array.isArray(v.assets))b.assets=v.assets.map(normAsset).filter(Boolean);
+      // 保险账独立：老备份里 cat=保险 的资产卡自动迁进保险账（只迁一次，按 id 去重）
+      var ins=Array.isArray(v.insurances)?v.insurances.map(normAsset).filter(Boolean):[];
+      var insIds={};ins.forEach(function(x){insIds[x.id]=1});
+      b.assets=b.assets.filter(function(a){
+        if(a.cat==='保险'){
+          if(!insIds[a.id]){ins.push(a);insIds[a.id]=1}
+          return false;
+        }
+        return true;
+      });
+      b.insurances=ins;
+      if(Array.isArray(v.assetCats)&&v.assetCats.length)b.assetCats=v.assetCats.slice();
+      if(Array.isArray(v.inflowCats)&&v.inflowCats.length)b.inflowCats=v.inflowCats.slice();
+      b.days=normDays(v.days);
+      if(Array.isArray(v.prepLedger))b.prepLedger=v.prepLedger;
+      if(Array.isArray(v.withdrawals))b.withdrawals=v.withdrawals;
+      if(v.recon&&typeof v.recon==='object')b.recon=v.recon;
+      return b;
+    });
+    var ok=false;
+    s.vehicles.forEach(function(v){if(v.id===o.activeVehicleId)ok=true});
+    s.activeVehicleId=ok?o.activeVehicleId:s.vehicles[0].id;
+    if(o.lastBackup)s.lastBackup=o.lastBackup;
+  }else if(o&&o.days){
+    // v1 备份迁移：原数据全部进一个新建账套（默认主车，可改名）
+    var b=blankVehicle({id:'v_'+uid(),plate:VEH_PRESET[0].plate,model:VEH_PRESET[0].model,sealed:false});
+    if(Array.isArray(o.platforms)&&o.platforms.length)b.platforms=o.platforms;
+    if(Array.isArray(o.costTypes)&&o.costTypes.length)b.costTypes=o.costTypes.filter(function(t){return t!=='提现'});
+    if(Array.isArray(o.incomeTypes)&&o.incomeTypes.length)b.incomeTypes=o.incomeTypes;
+    b.days=normDays(o.days);
+    s.vehicles=[b];s.activeVehicleId=b.id;
+    if(o.lastBackup)s.lastBackup=o.lastBackup;
+  }
+  return bindMirror(s);
+}
+function save(){
+  try{localStorage.setItem('__wt_s2',JSON.stringify(S))}catch(e){storageOK=false;renderNotice()}
+}
+function day(s){
+  if(!S.days[s])S.days[s]={shifts:[],enabled:defaultEnabled(s),flows:[],costs:[],note:''};
+  var x=S.days[s];
+  if(!Array.isArray(x.flows))x.flows=[];
+  if(!Array.isArray(x.costs))x.costs=[];
+  if(!Array.isArray(x.shifts))x.shifts=[];
+  if(!Array.isArray(x.enabled))x.enabled=defaultEnabled(s);
+  x.costs.forEach(function(c){if(!c.kind)c.kind='支出';if(typeof c.note!=='string')c.note=''});
+  return x;
+}
+function defaultEnabled(s){
+  var ks=Object.keys(S.days).filter(function(k){return k<s&&S.days[k].enabled&&S.days[k].enabled.length}).sort();
+  if(ks.length){
+    var prev=S.days[ks[ks.length-1]].enabled;
+    var ok=prev.filter(function(id){return S.platforms.some(function(p){return p.id===id&&p.on})});
+    if(ok.length)return ok;
+  }
+  return S.platforms.filter(function(p){return p.on}).slice(0,2).map(function(p){return p.id});
+}
+function pName(id){var p=S.platforms.filter(function(x){return x.id===id})[0];return p?p.name:'（已停用）'}
+function oneShiftH(s){
+  if(!s.start||!s.end)return 0;
+  var a=s.start.split(':'),b=s.end.split(':');
+  var m1=num(a[0])*60+num(a[1]),m2=num(b[0])*60+num(b[1]);
+  if(m2<m1)m2+=1440;   // 同一段跨午夜（夜班），仍按当天记；真跨天拆分暂不处理
+  return (m2-m1)/60;
+}
+function workH(x){return (x.shifts||[]).reduce(function(s,z){return s+oneShiftH(z)},0)}
+function totalKm(x){return (x.shifts||[]).reduce(function(s,z){return s+num(z.km)},0)}
+function calc(x){
+  var flow=0,orders=0,expense=0,income=0;
+  x.flows.forEach(function(f){flow+=num(f.amount);orders+=num(f.orders)});
+  x.costs.forEach(function(c){if(c.kind==='收入')income+=num(c.amount);else expense+=num(c.amount)});
+  var h=workH(x),km=totalKm(x);
+  return {flow:flow,orders:orders,expense:expense,income:income,cost:expense,net:flow+income-expense,h:h,km:km,
+    perH:h>0?flow/h:0,perKm:km>0?flow/km:0,perOrder:orders>0?flow/orders:0,
+    hKm:h>0?km/h:0,hOrder:h>0?orders/h:0};
+}
+
+/* ===== 固定资产 / 待摊引擎（按天 + 篮子净额）=====
+   口径（11-18 用户确认）：
+   1. 摊销颗粒度按天：日报/周报/月报/季报/年报/总账各自算本区间的天数，互不串账。
+   2. 整车 + 随车 = 一个篮子；退款/赔款/变卖等所有资产收回先抵扣这个篮子，抵扣后的净额再按天摊。
+   3. 其余类别（修缮/轮胎/保养/自定义）= 分支，每张卡自己按天摊，不进篮子。
+   4. 取消处置：status/endDate/endAmount 只保留字段兼容老备份，不再影响任何数字。
+   5. 保险走保险账：保费 − 退保后单独成篮按天摊，不混进资产。
+   老按月函数 assetPlan / assetDisposalInfo 已随 Excel 导出一起删除。 */
+function normAsset(a){
+  if(!a||typeof a!=='object')return null;
+  return {id:a.id||uid(),kind:a.kind==='inflow'?'inflow':'asset',cat:a.cat||'其他',
+    name:a.name||'',amount:num(a.amount),date:a.date||'',
+    lifeMonths:Math.max(0,num(a.lifeMonths)),
+    status:(a.status==='disposed'||a.status==='lost'||a.status==='sold')?'disposed':'active',
+    endDate:a.endDate||'',endAmount:num(a.endAmount),autoKey:a.autoKey||'',note:a.note||''};
+}
+function monthKeyOf(d){return d&&d.length>=7?d.slice(0,7):''}
+function ymIndex(mk){if(!mk||mk.length<7)return -1;return num(mk.slice(0,4))*12+num(mk.slice(5,7))-1}
+function addMonths(mk,n){var y=num(mk.slice(0,4)),m=num(mk.slice(5,7))-1+n;return String(y+Math.floor(m/12)).padStart(4,'0')+'-'+pad((m%12+12)%12+1)}
+function vehStart(vh){vh=vh||{};return vh.startDate||vh.buyDate||''}
+function vehEnd(vh){vh=vh||{};return vh.endDate||vh.scrapDate||''}
+function isLease(vh){vh=vh||{};return vh.property==='lease'}
+function leaseMonths(s,e){
+  // 租期月数：按覆盖的日历月数（含首尾月）——租1个月摊1个月，租满1年摊12个月
+  if(!s||!e)return 0;
+  var d=ymIndex(e.slice(0,7))-ymIndex(s.slice(0,7));
+  return d>0?d+1:1;
+}
+/* ---- 按天摊销计划 ----
+   一条计划 = {name,cat,start,end,net,perDay,basket}
+   区间摊额 = perDay × 本区间与 [start,end] 重叠的天数（含首尾）。
+   日报/周报/月报/季报/年报/总账各算各的，总账 = 全部周期之和。 */
+function dayCount(a,b){
+  if(!a||!b||a>b)return 0;
+  return Math.round((parseD(b)-parseD(a))/86400000)+1;
+}
+function endOfLife(date,n){
+  if(!date||date.length<7)return '';
+  return monthEnd(addMonths(date.slice(0,7),Math.max(1,num(n)||1)-1));
+}
+var BASKET_CATS=['整车','随车'];
+function isBasketCard(c){return !!c&&c.kind==='asset'&&BASKET_CATS.indexOf(c.cat)>=0}
+function basketEndOf(v,cards){
+  var ve=vehEnd(v&&v.vehicle);if(ve)return ve;   // 车辆结束日期优先：报废日 / 租期到期日
+  var best='';
+  (cards||[]).forEach(function(c){var e=endOfLife(c.date,c.lifeMonths);if(e>best)best=e});
+  return best;
+}
+function assetDayPlans(v){
+  v=v||statV();var list=v.assets||[],basket=[],plans=[],inflow=0;
+  list.forEach(function(c){
+    if(c.kind==='inflow'){inflow+=num(c.amount);return}
+    if(!c.date||num(c.amount)<=0)return;
+    if(isBasketCard(c)){basket.push(c);return}
+    // 分支：修缮/轮胎/保养/自定义，各自按 lifeMonths 从录入日摊，车结束日截断
+    var s=c.date,e=endOfLife(c.date,c.lifeMonths),ve=vehEnd(v&&v.vehicle);
+    if(ve&&ve<e)e=ve;
+    if(e<s)e=s;
+    plans.push({id:c.id,name:c.name||c.cat,cat:c.cat,start:s,end:e,net:num(c.amount),
+      perDay:num(c.amount)/dayCount(s,e),basket:false});
+  });
+  if(basket.length){
+    var gross=0,start='';
+    basket.forEach(function(c){gross+=num(c.amount);if(!start||c.date<start)start=c.date});
+    var net=Math.max(0,gross-inflow),end=basketEndOf(v,basket),days=dayCount(start,end);
+    if(days>0&&net>0)plans.unshift({id:'__basket',name:'整车+随车篮子',cat:'篮子',start:start,end:end,
+      net:net,perDay:net/days,basket:true,gross:gross,inflow:inflow});
+  }
+  return plans;
+}
+function insDayPlans(v){
+  v=v||statV();var list=insList(v),prem=[],refund=0;
+  list.forEach(function(c){
+    if(c.kind==='inflow'){refund+=num(c.amount);return}
+    if(c.date&&num(c.amount)>0)prem.push(c);
+  });
+  if(!prem.length)return [];
+  var gross=0,start='',end='';
+  prem.forEach(function(c){
+    gross+=num(c.amount);
+    if(!start||c.date<start)start=c.date;
+    var e=endOfLife(c.date,c.lifeMonths);
+    if(!end||e>end)end=e;
+  });
+  var net=Math.max(0,gross-refund),days=dayCount(start,end);
+  if(days<=0||net<=0)return [];
+  return [{name:'保险篮',cat:'保险',start:start,end:end,net:net,
+    perDay:net/days,basket:true,gross:gross,inflow:refund}];
+}
+function planDeprIn(plans,from,to){
+  from=from||'0000-01-01';to=to||'9999-12-31';var sum=0;
+  (plans||[]).forEach(function(p){
+    var s=p.start>from?p.start:from,e=p.end<to?p.end:to;
+    if(s<=e)sum+=p.perDay*dayCount(s,e);
+  });
+  return sum;
+}
+function assetDeprIn(from,to){return planDeprIn(assetDayPlans(statV()),from,to)}
+function assetInflowIn(from,to){
+  var v=statV(),sum=0;
+  (v.assets||[]).forEach(function(c){
+    if(c.kind==='inflow'&&c.date>=from&&c.date<=to)sum+=num(c.amount);
+  });
+  return sum;
+}
+function assetTotals(v){
+  v=v||statV();var buy=0,inflow=0;
+  (v.assets||[]).forEach(function(c){
+    if(c.kind==='asset')buy+=num(c.amount);else inflow+=num(c.amount);
+  });
+  var bp=null;
+  assetDayPlans(v).forEach(function(p){if(p.basket)bp=p});
+  return {buy:buy,anchor:0,inflow:inflow,invest:buy-inflow,
+    basketBuy:bp?bp.gross:0,basketNet:bp?bp.net:0,
+    basketStart:bp?bp.start:'',basketEnd:bp?bp.end:'',
+    basketDays:bp?dayCount(bp.start,bp.end):0,basketPerDay:bp?bp.perDay:0};
+}
+/* ===== 保险账（第 4 本账）：保费 − 退保后按天摊，不进经营净利 ===== */
+function insList(v){v=v||statV();return Array.isArray(v.insurances)?v.insurances:[]}
+function insDeprIn(from,to){return planDeprIn(insDayPlans(statV()),from,to)}
+function insTotals(v){
+  v=v||statV();var premium=0,refund=0;
+  insList(v).forEach(function(c){if(c.kind==='inflow')refund+=num(c.amount);else premium+=c.amount});
+  return {premium:premium,refund:refund,invest:premium-refund};
+}
+/* 按起止日期算整车/随车摊销月数（含首尾月）；起止任一缺失返回 0，让用户手动填 */
+function lifeMonthsBetween(date,endDate){
+  if(!date||!endDate)return 0;
+  var d=date.slice(0,10);
+  if(d>endDate)return 1;
+  return leaseMonths(d.slice(0,7)+'-01',endDate.slice(0,7)+'-01');
+}
+
+/* ===== 六级报告引擎：所有周期共用同一套原子量+派生公式 ===== */
+function weekStartOf(s){var d=parseD(s),wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return dstr(d)}
+function weekEndOf(s){return shiftD(weekStartOf(s),6)}
+function quarterOf(s){return Math.floor(num(s.slice(5,7))-1)/3|0}
+function rangeOf(mode,anchor){
+  var t=anchor||today();
+  if(mode==='day')return [t,t];
+  if(mode==='week')return [weekStartOf(t),weekEndOf(t)];
+  if(mode==='month')return [t.slice(0,7)+'-01',monthEnd(t.slice(0,7)+'-01')];
+  if(mode==='quarter'){
+    var y=t.slice(0,4),q=quarterOf(t),m1=String(q*3+1).padStart(2,'0'),m3=String(q*3+3).padStart(2,'0');
+    return [y+'-'+m1+'-01',monthEnd(y+'-'+m3+'-01')];
+  }
+  if(mode==='year')return [t.slice(0,4)+'-01-01',t.slice(0,4)+'-12-31'];
+  return [t,t];
+}
+function monthEnd(s){var y=num(s.slice(0,4)),m=num(s.slice(5,7));return dstr(new Date(y,m,0))}
+function reportRange(){
+  if(reportMode==='custom'){
+    return [reportFrom||'0000-01-01',reportTo||'9999-12-31'];
+  }
+  if(reportMode==='life')return ['0000-01-01','9999-12-31'];
+  var anchor=null;
+  if(reportMode==='day')anchor=repDay||today();
+  if(reportMode==='week')anchor=repWeek||today();
+  if(reportMode==='month')anchor=(repMonth||today().slice(0,7))+'-01';
+  if(reportMode==='quarter')anchor=(repYear||today().slice(0,4))+'-'+pad((repQ-1)*3+1)+'-01';
+  if(reportMode==='year')anchor=(repYear||today().slice(0,4))+'-01-01';
+  return rangeOf(reportMode,anchor);
+}
+function aggregate(from,to){
+  var v=statV(),cfg=v.config||{},start=from||'0000-01-01',end=to||'9999-12-31';
+  var ks=Object.keys(v.days).filter(function(k){return k>=start&&k<=end}).sort();
+  var r={from:start,to:end,D:ks.length,days:0,H:0,K:0,F:0,O:0,C:0,I:0,pflow:{},porder:{},count:ks.length};
+  ks.forEach(function(k){
+    var x=v.days[k],c=calc(x);
+    r.H+=c.h;r.K+=c.km;r.F+=c.flow;r.O+=c.orders;r.C+=c.expense;r.I+=c.income;
+    if(c.flow>0||c.orders>0||c.h>0)r.days++;
+    x.flows.forEach(function(f){r.pflow[f.pid]=(r.pflow[f.pid]||0)+num(f.amount);r.porder[f.pid]=(r.porder[f.pid]||0)+num(f.orders)});
+  });
+  r.wd=withdrawalsIn(start,end);          // 本区间提现（提现按日期归期）
+  r.net=r.F+r.I-r.C;                      // 经营净利（本区间流水+收入−经营成本；保险/资产摊销都不在这里）
+  r.depr=assetDeprIn(start,end);          // 本区间资产折旧（整车+随车净篮子 + 各分支，按重叠天数算）
+  r.insDepr=insDeprIn(start,end);         // 本区间保险摊销（保费−退保净额，按天）
+  r.assetIn=assetInflowIn(start,end);     // 本区间资产收回（仅供查看；已先抵扣篮子再摊，不单独回加）
+  r.netReal=r.net-r.insDepr-r.depr;       // 回本净利（纯利）：本区间净利 − 保险 − 资产折旧
+  r.balance=r.net-r.wd;                   // 经营净利减提现（对账表用，源表同口径）
+  r.avgH=r.days?r.H/r.days:0;
+  r.avgK=r.days?r.K/r.days:0;
+  r.avgF=r.days?r.F/r.days:0;
+  r.avgO=r.days?r.O/r.days:0;
+  r.hK=r.H?r.K/r.H:0;
+  r.hF=r.H?r.F/r.H:0;
+  r.hO=r.H?r.O/r.H:0;
+  r.price=r.K?r.F/r.K:0;
+  // 三本账（只生命周期有意义）
+  var cum=aggregateCore('0000-01-01',end);        // 截止本期末累计
+  var realStart=cfg.realStart||start;
+  var realFlow=aggregateCore(realStart,end).F;    // 截止本期末的累计流水（毛利口径）
+  var at=assetTotals();
+  r.realFlow=realFlow;
+  r.at=at;
+  r.insAt=insTotals();
+  r.gross=realFlow-at.invest;             // 毛利/总余额 = 累计流水 − 总投入（固定资产自动汇总）
+  r.lifeNet=cum.F+cum.I-cum.C;            // 累计经营净利（摊固定资产前）
+  var lifeAt=assetTotals();
+  r.lifeNetReal=r.lifeNet-insDeprIn('0000-01-01',end)-assetDeprIn('0000-01-01',end); // 累计回本净利（进项不回加，只冲减总投入）
+  r.recover=at.invest>0?Math.min(100,realFlow/at.invest*100):0;
+  r.withdraw=v.withdrawals.reduce(function(s,w){return s+num(w.amount)},0);
+  r.lifeBalance=r.lifeNet-r.withdraw;     // 生命周期经营净利：减掉累计提现
+  return r;
+}
+function aggregateCore(from,to){
+  var v=statV(),F=0,C=0,I=0,O=0,H=0,K=0,D=0;
+  Object.keys(v.days).forEach(function(k){
+    if(k<from||k>to)return;
+    var c=calc(v.days[k]);F+=c.flow;C+=c.expense;I+=c.income;O+=c.orders;H+=c.h;K+=c.km;
+    if(c.flow>0||c.orders>0||c.h>0)D++;
+  });
+  return {F:F,C:C,I:I,O:O,H:H,K:K,D:D};
+}
+function withdrawalsIn(from,to){
+  return statV().withdrawals.filter(function(w){return w.date>=from&&w.date<=to})
+    .reduce(function(s,w){return s+num(w.amount)},0);
+}
+/* 提现账本按车：点开哪辆车的详情就显示哪辆车的账，没点开时＝当前经营车。
+   统计口径仍固定用 V()（withdrawalsIn / aggregate），不受这里影响。 */
+function wdV(){
+  if(assetOpenId){
+    var v=(S.vehicles||[]).filter(function(z){return z.id===assetOpenId})[0];
+    if(v)return v;
+  }
+  return V();
+}
+
+function daysSince(s){
+  var a=parseD(s),b=parseD(today());
+  return Math.round((b-a)/86400000);
+}
+function daysDiff(from,to){
+  var a=parseD(from),b=parseD(to);
+  return Math.round((b-a)/86400000);
+}
+function renderNotice(){
+  var h='';
+  if(!storageOK){
+    h+='<div class="notice bad">当前打开方式不能可靠保存数据（常见于手机直接打开本地文件）。请改用网址打开，并立刻导出一次备份。</div>';
+  }
+  var n=S.lastBackup?daysSince(String(S.lastBackup).slice(0,10)):null;
+  if(n===null||n>=7){
+    h+='<div class="notice" id="goBackup">'+(n===null?'还没备份过':'距上次备份 '+n+' 天')+' · 点这里去导出一个备份文件</div>';
+  }
+  $('notice').innerHTML=h;
+  var g=$('goBackup');
+  if(g)g.onclick=function(){showTab('set')};
+}
+function renderVehPick(){
+  var el=$('vehPick');if(!el)return;
+  var vs=S.vehicles||[],v=statV();
+  if(!vs.length){el.innerHTML='<span style="color:var(--muted)">还没有车 · 去「车辆」添加</span>';el.onclick=function(){showTab('asset')};return}
+  var sub=v.sealed?'已封存 · 只读':(v.vehicle&&v.vehicle.model||v.model||'');
+  el.innerHTML='<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(v.plate)+(vs.length>1?'':'')+'<span class="vp-sub">'+esc(sub)+'</span></span>'+(vs.length>1?'<span style="color:var(--muted)">▾</span>':'');
+  el.onclick=function(){if(vs.length>1)openVehPicker()};
+}
+function openVehPicker(){
+  var mask=document.createElement('div');mask.className='modal';
+  var h='<div class="sheet"><h3>选择车辆</h3>';
+  (S.vehicles||[]).forEach(function(v){
+    h+='<div class="vehOpt'+(v.id===statV().id?' on':'')+'" data-pick="'+v.id+'">'+esc(v.plate)+
+      '<span style="color:var(--muted);font-size:12px;font-weight:400;flex:1">'+esc(v.vehicle&&v.vehicle.model||v.model||'')+'</span>'+
+      (v.sealed?'<span class="tag">已封存 · 只读</span>':'')+(v.id===S.activeVehicleId?'<span class="tag">当前经营</span>':'')+'</div>';
+  });
+  h+='<div class="hint" style="margin:0 0 8px">这里选的是「看哪辆车的账」，不会改变当前经营车。已封存的车只能查看，不能记账。</div>';
+  h+='<button class="btn full" id="vehPickClose" style="margin-top:12px">取消</button></div>';
+  mask.innerHTML=h;document.body.appendChild(mask);
+  function close(){mask.remove()}
+  mask.onclick=function(e){if(e.target===mask)close()};
+  $('vehPickClose').onclick=close;
+  Array.prototype.forEach.call(mask.querySelectorAll('[data-pick]'),function(o){
+    o.onclick=function(){
+      var id=o.getAttribute('data-pick');
+      viewId=id;close();listPage=1;renderAll();
+    };
+  });
+}
+function renderDate(){
+  $('dPick').value=curDate;
+  renderVehPick();
+  var x=viewDay(curDate),c=calc(x);
+  var n=x.shifts.length+x.flows.length+x.costs.length;
+  $('dLabel').textContent=curDate.slice(0,4)+'年'+num(curDate.slice(5,7))+'月'+num(curDate.slice(8,10))+'日 · 周'+weekday(curDate)+' · '+n+' 笔记录'+(curDate===today()?' · 今天':' · 补记');
+  // 录入区临时字段，切日期时清空，避免把别的天的草稿带过来
+  $('tStart').value='';$('tEnd').value='';$('tKm').value='';
+  $('workHint').textContent=x.shifts.length?('共 '+x.shifts.length+' 段，工作时长与里程见下方「当日合计」。真跨天（收车在次日）暂按当天记。'):'填出车、收车、里程后点「保存这一段」，可分多段。';
+}
+function renderShifts(){
+  var x=viewDay(curDate),h='',ro=viewReadOnly();
+  x.shifts.forEach(function(s,idx){
+    var hh=oneShiftH(s);
+    h+='<div class="item"><span class="t">第'+(idx+1)+'段</span><span class="d">'+(s.start||'?')+' → '+(s.end||'?')+(num(s.km)?' · '+m2(num(s.km))+' km':'')+'</span><span class="m">'+(hh?m2(hh)+'h':'')+'</span>'+(ro?'':'<button class="del" data-sk="shift" data-id="'+s.id+'">删</button>')+'</div>';
+  });
+  $('shiftItems').innerHTML=h||'<div class="empty">还没有工作时段</div>';
+  bindDel($('shiftItems'));
+}
+function renderFlowPlatforms(){
+  var h='',plats=S.platforms.filter(function(p){return p.on});
+  if(!plats.some(function(p){return p.id===selPid}))selPid=plats.length?plats[0].id:null;
+  plats.forEach(function(p){
+    h+='<button class="chip'+(selPid===p.id?' on':'')+'" data-fpid="'+p.id+'">'+esc(p.name)+'</button>';
+  });
+  if(!h)h='<div class="hint" style="margin:0">还没有平台，去「设置 → 平台目录」加一个。</div>';
+  $('flowPlatforms').innerHTML=h;
+  Array.prototype.forEach.call($('flowPlatforms').querySelectorAll('[data-fpid]'),function(b){
+    b.onclick=function(){selPid=b.getAttribute('data-fpid');renderFlowPlatforms();$('fAmount').focus()};
+  });
+  $('btnFlow').textContent=selPid?('保存流水 · '+pName(selPid)):'先加一个平台';
+}
+function curTypes(){return selKind==='收入'?S.incomeTypes:S.costTypes}
+function renderCostTypes(){
+  var h='',types=curTypes();
+  if(types.indexOf(selType)<0)selType=types.length?types[0]:'';
+  types.forEach(function(t){h+='<button class="chip mini'+(selType===t?' on':'')+'" data-ct="'+esc(t)+'">'+esc(t)+'</button>'});
+  $('costTypes').innerHTML=h;
+  $('kindExpense').className='chip mini'+(selKind==='支出'?' on':'');
+  $('kindIncome').className='chip mini'+(selKind==='收入'?' on':'');
+  $('btnCost').textContent='保存'+selKind+' · '+selType;
+  Array.prototype.forEach.call($('costTypes').querySelectorAll('[data-ct]'),function(b){
+    b.onclick=function(){selType=b.getAttribute('data-ct');renderCostTypes();$('cAmount').focus()};
+  });
+}
+function renderSummary(){
+  var x=viewDay(curDate),c=calc(x),ro=viewReadOnly();
+  var b=[];
+  b.push(['今日流水',m2(c.flow),'元']);
+  b.push(['今日单量',String(c.orders),'单']);
+  b.push(['行驶里程',m2(c.km),'km']);
+  b.push(['工作时长',m2(c.h),'小时']);
+  b.push(['小时里程',m2(c.hKm),'km/时']);
+  b.push(['小时单量',m2(c.hOrder),'单/时']);
+  b.push(['小时流水',m2(c.perH),'元/时']);
+  b.push(['里程单价',m2(c.perKm),'元/km']);
+  b.push(['今日支出',m2(c.expense),'元']);
+  b.push(['今日余额',m2(c.flow-c.expense),'元']);   // 每日账只算经营：流水−支出，收入/资产类不进这里
+  $('sumBox').innerHTML=b.map(function(a){return '<div class="kv"><div class="k">'+a[0]+'</div><div class="v">'+a[1]+' <small>'+a[2]+'</small></div></div>'}).join('');
+  var items=[];
+  x.shifts.forEach(function(s,idx){items.push({t:s.start||'',d:'第'+(idx+1)+'段 '+(s.start||'?')+'→'+(s.end||'?')+(num(s.km)?' · '+m2(num(s.km))+'km':''),m:oneShiftH(s)?m2(oneShiftH(s))+'h':'',k:'shift',id:s.id})});
+  x.flows.forEach(function(f){items.push({t:f.t,d:esc(pName(f.pid)),m:'+'+m2(f.amount),k:'flow',id:f.id,extra:' · '+num(f.orders)+'单'})});
+  x.costs.forEach(function(f){items.push({t:f.t,d:esc(f.kind+' · '+f.type),m:(f.kind==='收入'?'+':'-')+m2(f.amount),k:'cost',id:f.id,
+    extra:f.note?' <span style="color:var(--muted);font-size:12px">· '+esc(f.note)+'</span>':'',wrap:!!f.note})});
+  items.sort(function(a,b2){return a.t<b2.t?-1:(a.t>b2.t?1:0)});
+  $('dayItems').innerHTML=items.length?items.map(function(i){
+    return '<div class="item"><span class="t">'+esc(i.t)+'</span><span class="d"'+(i.wrap?' style="white-space:normal"':'')+'>'+i.d+(i.extra||'')+'</span><span class="m">'+i.m+'</span>'+(ro?'':'<button class="del" data-k="'+i.k+'" data-id="'+i.id+'">删</button>')+'</div>';
+  }).join(''):'<div class="empty">今天还没有记录</div>';
+  bindDel($('dayItems'));
+}
+function bindDel(container){
+  Array.prototype.forEach.call(container.querySelectorAll('.del'),function(b){
+    b.onclick=function(){
+      if(!canWrite())return;
+      if(!confirm('删掉这一条？'))return;
+      var x=day(curDate),k=b.getAttribute('data-k')||b.getAttribute('data-sk'),id=b.getAttribute('data-id');
+      var arr=k==='shift'?x.shifts:(k==='flow'?x.flows:x.costs);
+      var i=arr.map(function(a){return a.id}).indexOf(id);
+      if(i>=0)arr.splice(i,1);
+      save();renderAll();
+    };
+  });
+}
+var listPage=1;   // 明细按日汇总分页（每页 30 天）
+function renderList(){
+  var sv=statV(),ds=sv.days||{};
+  var all=Object.keys(ds).sort().reverse().filter(function(k){var x=ds[k];return (x.flows&&x.flows.length)||(x.costs&&x.costs.length)||(x.shifts&&x.shifts.length)});
+  var pages=Math.max(1,Math.ceil(all.length/30));
+  if(listPage>pages)listPage=pages;
+  if(listPage<1)listPage=1;
+  var ks=all.slice((listPage-1)*30,listPage*30);
+  var h=ks.length?('<table><tr><th>日期</th><th>流水</th><th>单</th><th>支出</th><th>工时</th></tr>'+ks.map(function(k){
+    var c=calc(ds[k]);
+    return '<tr><td><a href="#" data-jump="'+k+'" style="color:var(--blue);text-decoration:none">'+k.slice(5)+' 周'+weekday(k)+'</a></td><td>'+m2(c.flow)+'</td><td>'+c.orders+'</td><td>'+m2(c.expense)+'</td><td>'+(c.h?m2(c.h):'—')+'</td></tr>';
+  }).join('')+'</table>'):'<div class="empty">还没有数据</div>';
+  if(pages>1)h+='<div class="row" style="margin-top:10px;align-items:center;justify-content:space-between">'+
+    '<button class="btn sm" id="listPrev"'+(listPage<=1?' disabled':'')+'>‹ 上一页</button>'+
+    '<span style="font-size:12px;color:var(--muted)">第 '+listPage+' / '+pages+' 页 · 共 '+all.length+' 天</span>'+
+    '<button class="btn sm" id="listNext"'+(listPage>=pages?' disabled':'')+'>下一页 ›</button></div>';
+  $('dayList').innerHTML=h;
+  Array.prototype.forEach.call($('dayList').querySelectorAll('[data-jump]'),function(a){
+    a.onclick=function(e){e.preventDefault();curDate=a.getAttribute('data-jump');showTab('add');renderAll()};
+  });
+  if($('listPrev'))$('listPrev').onclick=function(){listPage--;renderList()};
+  if($('listNext'))$('listNext').onclick=function(){listPage++;renderList()};
+}
+/* ===== 资产标签 = 账套/车辆管理 + 资产流水 ===== */
+var assetOpenId=null;   // null=列表层，否则为打开的车 id
+var assetDir='asset';   // 资产流水当前方向：asset=支出投入 / inflow=收入收回
+var assetCatMgr=false;  // 类别管理区是否展开
+function assetBadge(v){
+  var vh=v.vehicle||{},lease=isLease(vh);
+  return '<span class="tag">'+(lease?'租赁':'购买')+'</span>'+(v.sealed?'<span class="tag">已封存</span>':'<span class="tag">在用</span>');
+}
+function renderAssetTab(){
+  if(!$('assetWrap'))return;
+  if(assetOpenId){renderAssetDetail();return}
+  var vs=S.vehicles||[];
+  var h='';
+  // 当前车 + 新建入口
+  h+='<div class="card"><h2>我的车</h2>';
+  if(!vs.length)h+='<div class="empty">你还没有车。在下面填车牌建一辆，就能开始经营记账；也可以到「设置 → 备份」导入建账文件。</div>';
+  else h+=vs.map(function(v){
+    var vh=v.vehicle||{},lease=isLease(vh);
+    var rows=[['属性',lease?'租赁':'购买'],['车型',vh.model||v.model||'—']];
+    var cur=v.id===S.activeVehicleId;
+    var card='<div class="item" style="align-items:flex-start;padding:12px 0;flex-wrap:wrap">';
+    card+='<span class="d" data-open="'+v.id+'" style="white-space:normal;cursor:pointer;flex:1 1 100%"><strong style="font-size:15px">'+esc(v.plate)+'</strong> '+
+      assetBadge(v)+(cur?' <span class="tag">当前经营</span>':'')+
+      '<span style="display:block;color:var(--muted);font-size:12px;margin-top:4px">'+rows.map(function(r){return esc(r[0])+' '+esc(r[1])}).join(' · ')+'</span></span>';
+    var cnt=(v.assets||[]).filter(function(a){return a.kind==='asset'}).length;
+    card+='<span class="actbar" style="flex:1 1 100%;margin-top:8px">';
+    card+='<button class="btn sm" data-open="'+v.id+'">'+cnt+' 笔资产 ›</button>';
+    if(!cur&&!v.sealed)card+='<button class="btn sm" data-vset="'+v.id+'">切换经营</button>';
+    if(!v.sealed)card+='<button class="btn sm" data-vseal="'+v.id+'">封存</button>';
+    else card+='<button class="btn sm" data-vunseal="'+v.id+'">解封</button>';
+    card+='</span></div>';
+    return card;
+  }).join('');
+  h+='<div class="split"></div>';
+  h+='<label class="f">添加车辆</label>';
+  h+='<div class="row wrap"><input type="text" id="newPlate" class="grow" placeholder="车牌号，如 京AXXXXX" style="flex:1 1 140px">'+
+    '<input type="text" id="newModel" class="grow" placeholder="车型" style="flex:1 1 140px">'+
+    '<button class="btn primary" id="btnAddVehicle">添加</button></div>';
+  h+='<div class="hint">先有车才能经营。点车牌进二级页看这辆车的资产账和提现账。<strong>封存＝封账</strong>：封存后经营账、资产账、提现账全部只读，也不能切换成经营车；只有在这里「解封」才能再记。</div></div>';
+  $('assetWrap').innerHTML=h;
+  Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-open]'),function(el){
+    el.onclick=function(){assetOpenId=el.getAttribute('data-open');renderAll()};
+  });
+  Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-vset]'),function(b){
+    b.onclick=function(){
+      var t=(S.vehicles||[]).filter(function(z){return z.id===b.getAttribute('data-vset')})[0];
+      if(guardRO(t,'切换经营'))return;
+      S.activeVehicleId=t.id;viewId='';listPage=1;save();renderAll();
+    };
+  });
+  Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-vseal]'),function(b){
+    b.onclick=function(){if(confirm('封存这辆车？封存＝封账，三本账全部只读，要再记账需先解封。')){
+      var v=(S.vehicles||[]).filter(function(z){return z.id===b.getAttribute('data-vseal')})[0];
+      if(!v)return;
+      // 封存当前经营车时，自动把经营切到另一辆在用车，避免「既封存又是经营车」
+      if(v.id===S.activeVehicleId){
+        var alt=(S.vehicles||[]).filter(function(z){return z.id!==v.id&&!z.sealed})[0];
+        if(!alt){alert('至少要留一辆在用车作为当前经营车，不能封存唯一一辆。');return}
+        S.activeVehicleId=alt.id;
+      }
+      v.sealed=true;viewId='';listPage=1;save();renderAll();
+    }};
+  });
+  Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-vunseal]'),function(b){
+    b.onclick=function(){var v=(S.vehicles||[]).filter(function(z){return z.id===b.getAttribute('data-vunseal')})[0];if(v)v.sealed=false;save();renderAll()};
+  });
+  $('btnAddVehicle').onclick=function(){
+    var p=$('newPlate').value.trim(),md=$('newModel').value.trim();
+    if(!p){alert('填车牌号');return}
+    if(S.vehicles.some(function(x){return x.plate===p})){alert('这个车牌已经有账套了');return}
+    var id='v_'+uid(),v=blankVehicle({id:id,plate:p,model:md,sealed:false});
+    v.config.prepAnchor=0;S.vehicles.push(v);S.activeVehicleId=id;viewId='';listPage=1;
+    save();renderAll();
+  };
+}
+var wdPage=1,insPage=1,assetPage=1;
+function autoLife(v,d){var m=lifeMonthsBetween(d,(v.vehicle||{}).endDate);return m>0?String(m):''}
+function wdPlatformOptions(v){
+  var names=[],seen={};
+  (v.platforms||[]).forEach(function(p){if(!seen[p.name]){seen[p.name]=1;names.push(p.name)}});
+  (v.withdrawals||[]).forEach(function(w){if(w.plat&&!seen[w.plat]){seen[w.plat]=1;names.push(w.plat)}});
+  if(!names.length)names=['未分类'];
+  return names;
+}
+function wdCardHTML(v){
+  var wds=(v.withdrawals||[]).slice().sort(function(x,y){return x.date<y.date?1:(x.date>y.date?-1:0)});
+  var per=10,pages=Math.max(1,Math.ceil(wds.length/per));
+  wdPage=Math.max(1,Math.min(wdPage,pages));
+  var slice=wds.slice((wdPage-1)*per,wdPage*per),ro=!!v.sealed;
+  var h='<div class="card"><h2>提现账本 · '+esc(v.plate||'')+(ro?'（已封存 · 只读）':'')+'</h2>';
+  h+='<div class="hint" style="margin:0 0 8px">提现单独记，不进成本。平台从下拉里选；最新 10 条一页，超过可翻页。</div>';
+  if(!ro){
+    h+='<div id="wdForm"><div class="row" style="margin-bottom:8px">';
+    h+='<input type="date" id="wdDate" style="flex:1 1 110px;min-width:0" value="'+today()+'">';
+    var defPlat=wds.length?(wds[0].plat||''):'';
+    h+='<select id="wdPlat" style="flex:1 1 100px;min-width:0">'+wdPlatformOptions(v).map(function(n){return '<option'+(n===defPlat?' selected':'')+'>'+esc(n)+'</option>'}).join('')+'</select>';
+    h+='</div><div class="row" style="margin-bottom:8px">';
+    h+='<input type="number" inputmode="decimal" id="wdAmt" class="grow" placeholder="金额" style="flex:1 1 100px;min-width:0" step="0.01">';
+    h+='<button class="btn sm" id="btnWdAdd">记</button></div></div>';
+  }
+  if(!wds.length)h+='<div class="empty">这辆车还没记提现</div>';
+  else{
+    h+='<table><tr><th>日期</th><th>平台</th><th>金额</th></tr>'+slice.map(function(w){
+      return '<tr><td>'+esc(w.date)+'</td><td>'+esc(w.plat||'未分类')+'</td><td>'+m2(num(w.amount))+'</td></tr>';
+    }).join('')+'</table>';
+    if(pages>1)h+='<div class="row" style="margin-top:8px"><button class="btn sm" id="wdPrev"'+(wdPage<=1?' disabled':'')+'>‹ 上一页</button>'+
+      '<span style="flex:1;text-align:center;color:var(--muted);font-size:13px">第 '+wdPage+' / '+pages+' 页</span>'+
+      '<button class="btn sm" id="wdNext"'+(wdPage>=pages?' disabled':'')+'>下一页 ›</button></div>';
+  }
+  var y=today().slice(0,4),m=today().slice(0,7);
+  function wsum(f,t){return wds.filter(function(w){return w.date>=f&&w.date<=t}).reduce(function(z,w){return z+num(w.amount)},0)}
+  h+='<div class="hint" style="margin-top:8px">本月 '+m2(wsum(m+'-01',monthEnd(m+'-01')))+' 元 · 本年 '+m2(wsum(y+'-01-01',y+'-12-31'))+' 元 · 历史 '+m2(wsum('0000-01-01','9999-12-31'))+' 元</div>';
+  return h+'</div>';
+}
+function insCardHTML(v){
+  var list=insList(v),ro=!!v.sealed,ip=insDayPlans(v)[0]||null;
+  var per=4,pages=Math.max(1,Math.ceil(list.length/per));
+  insPage=Math.max(1,Math.min(insPage,pages));
+  var slice=list.slice((insPage-1)*per,insPage*per);
+  var h='<div class="card"><h2>保险账本 · '+esc(v.plate||'')+(ro?'（已封存 · 只读）':'')+'</h2>';
+  h+='<div class="hint" style="margin:0 0 8px">保费先减去退保，剩下的净额按天摊；统计页从经营净利里单独扣。租来的车没保险就空着；社保也能记这里。</div>';
+  if(!ro){
+    h+='<div class="row wrap" style="margin-bottom:8px"><select id="insDir" style="flex:1 1 110px"><option value="asset">投保（按天摊）</option><option value="inflow">退保（抵扣保费）</option></select>'+
+      '<select id="insCat" style="flex:1 1 80px"><option>保险</option><option>社保</option><option>其他</option></select>'+
+      '<input type="text" id="insName" class="grow" placeholder="名称，如 交强险 / 商业险 / 社保" style="flex:2 1 130px"></div>';
+    h+='<div class="row wrap" style="margin-bottom:8px"><input type="date" id="insDate" style="flex:1 1 110px" value="'+today()+'">'+
+      '<input type="number" inputmode="decimal" id="insAmt" placeholder="金额" style="flex:1 1 90px" step="0.01">'+
+      '<input type="number" inputmode="numeric" id="insLife" placeholder="月数" value="12" style="flex:1 1 70px">'+
+      '<button class="btn sm" id="btnInsAdd">记</button></div>';
+  }
+  if(!list.length)h+='<div class="empty">这辆车还没有保险记录</div>';
+  else{
+    h+='<div class="alist">';
+    slice.forEach(function(c){
+      var inc=c.kind==='inflow';
+      h+='<div class="arow"><div class="atop"><span class="tag">'+(inc?'退保':'投保')+'</span><span class="aname">'+esc(c.name)+'</span><span class="tag">'+esc(c.cat)+'</span></div>'+
+        '<div class="ameta">'+esc(c.date)+(inc?' · 抵扣保费':' · 摊 '+c.lifeMonths+' 个月')+'</div>'+
+        '<div class="abtm"><span class="amt"'+(inc?' style="color:var(--brand)"':'')+'>'+(inc?'+':'-')+m2(c.amount)+'</span>'+
+        (inc?'':'<span style="color:var(--muted);font-size:12px">日摊 '+m2(ip?ip.perDay:0)+'</span>')+
+        '<span class="act">'+(ro?'<span class="tag">只读</span>':
+          '<button class="del" data-insedit="'+c.id+'" style="color:var(--blue)">改</button><button class="del" data-insdel="'+c.id+'">删</button>')+
+        '</span></div></div>';
+    });
+    h+='</div>';
+    if(pages>1)h+='<div class="row" style="margin-top:8px"><button class="btn sm" id="insPrev"'+(insPage<=1?' disabled':'')+'>‹ 上一页</button>'+
+      '<span style="flex:1;text-align:center;color:var(--muted);font-size:13px">第 '+insPage+' / '+pages+' 页</span>'+
+      '<button class="btn sm" id="insNext"'+(insPage>=pages?' disabled':'')+'>下一页 ›</button></div>';
+  }
+  var at=insTotals(v);
+  h+='<div class="hint" style="margin-top:8px">累计保费 '+m2(at.premium)+' − 退保 '+m2(at.refund)+' = 净额 '+m2(at.invest)+' 元'+(ip?'，'+esc(ip.start)+' 至 '+esc(ip.end)+' 每天 '+m2(ip.perDay)+' 元':'')+'。</div>';
+  return h+'</div>';
+}
+function assetSectionHTML(v,ro,dis){
+  var h='<div class="card"><h2>资产流水</h2>';
+  h+='<div class="hint" style="margin:0 0 8px">整车、随车、修缮逐笔记这里。整车+随车合成一篮，收入（退押金、赔款、卖车款）先抵扣这个篮子，净额按天摊；修缮等各自按天摊。保险请到上面的保险账本记。</div>';
+  h+='<div class="row wrap" style="margin-bottom:8px">';
+  h+='<select id="asDir2" style="flex:1 1 170px"'+dis+'><option value="asset"'+(assetDir==='asset'?' selected':'')+'>支出 · 投入（按天摊）</option><option value="inflow"'+(assetDir==='inflow'?' selected':'')+'>收入 · 收回（抵扣篮子）</option></select>';
+  h+='<button class="btn sm" id="btnCatMgr"'+dis+'>'+(assetCatMgr?'收起类别管理':'管理类别')+'</button></div>';
+  if(assetCatMgr){
+    h+='<div style="border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:10px">';
+    h+='<label class="f">支出类</label><div class="row wrap" style="margin-bottom:6px">'+assetCatsOf(v).map(function(t){
+      return '<span class="chip mini on">'+esc(t)+' <button class="del" data-acdel="'+esc(t)+'" style="color:var(--danger)"'+dis+'>×</button></span>';
+    }).join(' ')+'</div>';
+    h+='<div class="row" style="margin-bottom:10px"><input type="text" id="newAssetCat" class="grow" placeholder="新支出类别名"'+dis+'><button class="btn sm" id="btnAddAssetCat"'+dis+'>添加</button></div>';
+    h+='<label class="f">收入类</label><div class="row wrap" style="margin-bottom:6px">'+inflowCatsOf(v).map(function(t){
+      return '<span class="chip mini on">'+esc(t)+' <button class="del" data-icdel="'+esc(t)+'" style="color:var(--danger)"'+dis+'>×</button></span>';
+    }).join(' ')+'</div>';
+    h+='<div class="row"><input type="text" id="newInflowCat" class="grow" placeholder="新收入类别名"'+dis+'><button class="btn sm" id="btnAddInflowCat"'+dis+'>添加</button></div>';
+    h+='<div class="hint" style="margin-top:8px">类别只影响下拉选项，改了不会动已记的流水。</div></div>';
+  }
+  var cats=assetDir==='asset'?assetCatsOf(v):inflowCatsOf(v);
+  h+='<div class="row wrap" style="margin-bottom:8px">';
+  h+='<select id="asCat2" style="flex:1 1 100px"'+dis+'>'+cats.map(function(t){return '<option>'+esc(t)+'</option>'}).join('')+'</select>';
+  h+='<input type="text" id="asName2" class="grow" placeholder="名称，如 车款 / 座套 / 退押金" style="flex:2 1 150px"'+dis+'></div>';
+  h+='<div class="row wrap" style="margin-bottom:8px">';
+  h+='<input type="date" id="asDate2" style="flex:1 1 120px" value="'+today()+'"'+dis+'>';
+  h+='<input type="number" inputmode="decimal" id="asAmt2" placeholder="金额" style="flex:1 1 90px" step="0.01"'+dis+'>';
+  if(assetDir==='asset')h+='<input type="number" inputmode="numeric" id="asLife2" placeholder="摊销月数" value="'+esc(autoLife(v,today()))+'" style="flex:1 1 90px"'+dis+'>';
+  h+='<button class="btn sm" id="btnAsAdd2"'+dis+'>记</button></div>';
+  if(assetDir==='asset')h+='<div class="hint" style="margin:0 0 8px">整车、随车按车辆「结束日期」自动摊到那天，月数只作参考；修缮/轮胎/保养按这里填的月数从录入日摊。旧记录点「改」可调整。</div>';
+  var cards=v.assets||[],per=4,pages=Math.max(1,Math.ceil(cards.length/per));
+  assetPage=Math.max(1,Math.min(assetPage,pages));
+  var slice=cards.slice((assetPage-1)*per,assetPage*per);
+  var plans=assetDayPlans(v),bp=null;
+  function findPlan(id){var r=null;plans.forEach(function(p){if(p.id===id)r=p});return r}
+  bp=findPlan('__basket');
+  if(!cards.length)h+='<div class="empty">还没记资产流水</div>';
+  else{
+    h+='<div class="alist">';
+    slice.forEach(function(c){
+      var inc=c.kind==='inflow',basketCard=isBasketCard(c),pl=findPlan(c.id);
+      var span=pl?(pl.start+' 至 '+pl.end):endOfLife(c.date,c.lifeMonths);
+      h+='<div class="arow"><div class="atop"><span class="tag">'+(inc?'收':'支')+'</span><span class="aname">'+esc(c.name)+'</span>'+
+        '<span class="tag">'+esc(c.cat)+(basketCard?' · 整车篮':'')+'</span></div>';
+      h+='<div class="ameta">'+esc(c.date)+(inc?' · 抵扣整车+随车篮子':' · 按天摊 '+esc(span))+'</div>';
+      h+='<div class="abtm"><span class="amt"'+(inc?' style="color:var(--brand)"':'')+'>'+(inc?'+':'-')+m2(c.amount)+'</span>'+
+        (inc?'':'<span style="color:var(--muted);font-size:12px">日摊 '+m2(basketCard&&bp?bp.perDay:(pl?pl.perDay:0))+'</span>')+
+        '<span class="act">'+(ro?'<span class="tag">只读</span>':
+          '<button class="del" data-asedit2="'+c.id+'" style="color:var(--blue)">改</button>'+
+          '<button class="del" data-asdel2="'+c.id+'">删</button>')+'</span></div></div>';
+    });
+    h+='</div>';
+    if(pages>1)h+='<div class="row" style="margin-top:8px"><button class="btn sm" id="asPrev"'+(assetPage<=1?' disabled':'')+'>‹ 上一页</button>'+
+      '<span style="flex:1;text-align:center;color:var(--muted);font-size:13px">第 '+assetPage+' / '+pages+' 页</span>'+
+      '<button class="btn sm" id="asNext"'+(assetPage>=pages?' disabled':'')+'>下一页 ›</button></div>';
+    h+='<div class="hint" style="margin-top:8px">绿色带 + 的是收入：退款、赔款、卖车款都先抵扣整车+随车篮子，抵扣后的净额才按天摊。</div>';
+  }
+  var at=assetTotals(v);
+  h+='<div class="hint" style="margin-top:8px"><strong>资产总计：投入 '+m2(at.buy)+' − 收回 '+m2(at.inflow)+' = 净投入 '+m2(at.invest)+' 元。</strong></div>';
+  if(bp)h+='<div class="hint" style="margin-top:6px"><strong>整车+随车篮子：买入 '+m2(bp.gross)+' − 收回 '+m2(bp.inflow)+' = 净额 '+m2(bp.net)+' 元</strong>，'+esc(bp.start)+' 至 '+esc(bp.end)+' 共 '+dayCount(bp.start,bp.end)+' 天，每天 '+m2(bp.perDay)+' 元。</div>';
+  h+='<div class="hint" style="margin-top:6px">修缮、轮胎、保养等其他类别各自按天摊，不进整车篮子。</div>';
+  return h+'</div>';
+}
+function renderAssetDetail(){
+  var v=(S.vehicles||[]).filter(function(z){return z.id===assetOpenId})[0];
+  if(!v){assetOpenId=null;renderAssetTab();return}
+  var vh=v.vehicle||{},lease=isLease(vh),ro=!!v.sealed,dis=ro?' disabled':'';
+  var h='<div class="card"><button class="btn sm" id="assetBack">‹ 返回车辆列表</button></div>';
+  if(ro)h+='<div class="notice bad"><strong>'+esc(v.plate)+' 已封存（封账）</strong>：基础信息、提现账、保险账、资产账全部只读，不能新增、修改、删除。要再记账请回车辆列表点「解封」。</div>';
+  h+='<div class="card"><h2>'+esc(v.plate)+' · 基础信息</h2><div class="vehgrid">';
+  h+='<div><label class="f">车牌号</label><input type="text" id="vehPlate" value="'+esc(v.plate)+'"'+dis+'></div>';
+  h+='<div><label class="f">车型</label><input type="text" id="vehModel" value="'+esc(vh.model||v.model||'')+'"'+dis+'></div>';
+  h+='<div><label class="f">属性</label><select id="vehProp"'+dis+'><option value="buy"'+(lease?'':' selected')+'>购买</option><option value="lease"'+(lease?' selected':'')+'>租赁</option></select></div>';
+  h+='</div><div class="grid" style="margin-top:8px">';
+  h+='<div><label class="f">起始日期</label><input type="date" id="vehStart" value="'+esc(vh.startDate||'')+'"'+dis+'></div>';
+  h+='<div><label class="f">结束日期</label><input type="date" id="vehEnd" value="'+esc(vh.endDate||'')+'"'+dis+'></div>';
+  h+='</div><div class="hint" style="margin-top:8px">结束日期＝运输证上的报废日或租期到期日。填好后，下面新增资产会自动带入摊销月数，可手改；旧记录点「改」可调整。</div></div>';
+  h+=wdCardHTML(v);
+  h+=insCardHTML(v);
+  h+=assetSectionHTML(v,ro,dis);
+  $('assetWrap').innerHTML=h;
+  bindAssetDetail(v);
+}
+function openCardEditModal(v,arrName,c){
+  if(guardRO(v,'修改记录'))return;
+  var isIns=arrName==='insurances',inc=c.kind==='inflow';
+  var base=isIns?['保险','社保','退保']:(inc?inflowCatsOf(v):assetCatsOf(v));
+  var cats=(c.cat&&base.indexOf(c.cat)<0)?[c.cat].concat(base):base;
+  var mask=document.createElement('div');mask.className='modal';
+  var h='<div class="sheet"><h3>改记录 · '+esc(c.name||'未命名')+'</h3>';
+  h+='<label class="f">方向</label><select id="edDir">'+
+    '<option value="asset"'+(!inc?' selected':'')+'>'+(isIns?'投保（按天摊）':'支出 · 投入（按天摊）')+'</option>'+
+    '<option value="inflow"'+(inc?' selected':'')+'>'+(isIns?'退保（一次性）':'收入 · 收回（一次性）')+'</option></select>';
+  h+='<label class="f" style="margin-top:8px">类别</label><select id="edCat">'+cats.map(function(t){return '<option'+(t===c.cat?' selected':'')+'>'+esc(t)+'</option>'}).join('')+'</select>';
+  h+='<label class="f" style="margin-top:8px">名称</label><input type="text" id="edName" value="'+esc(c.name)+'">';
+  h+='<div class="row" style="margin-top:8px"><div style="flex:1"><label class="f">日期</label><input type="date" id="edDate" value="'+esc(c.date)+'"></div>'+
+    '<div style="flex:1"><label class="f">金额</label><input type="number" id="edAmt" step="0.01" value="'+num(c.amount)+'"></div></div>';
+  h+='<label class="f" style="margin-top:8px">摊销月数</label><input type="number" id="edLife" value="'+num(c.lifeMonths)+'"'+(inc?' disabled':'')+'>';
+  h+='<div class="hint" style="margin:6px 0 12px">整车/随车按车辆结束日期摊，月数只作参考；修缮/轮胎/保养按这里填的月数从录入日摊。改成收入后月数不适用。</div>';
+  h+='<button class="btn primary full" id="edOK">保存</button><button class="btn full" id="edCancel" style="margin-top:8px">取消</button></div>';
+  mask.innerHTML=h;document.body.appendChild(mask);
+  function close(){mask.remove()}
+  mask.onclick=function(e){if(e.target===mask)close()};
+  $('edCancel').onclick=close;
+  var lastAuto=autoLife(v,$('edDate').value);
+  $('edDir').onchange=function(){$('edLife').disabled=this.value==='inflow'};
+  $('edDate').onchange=function(){
+    var nv=autoLife(v,this.value);
+    if($('edLife').value===lastAuto&&!$('edLife').disabled)$('edLife').value=nv;
+    lastAuto=nv;
+  };
+  $('edOK').onclick=function(){
+    var kind=$('edDir').value==='inflow'?'inflow':'asset';
+    var nm=$('edName').value.trim(),d=$('edDate').value,amt=num($('edAmt').value);
+    if(!nm){alert('填名称');return}
+    if(!d){alert('填日期');return}
+    if(amt<=0){alert('金额要大于 0');return}
+    var life=kind==='asset'?num($('edLife').value):0;
+    if(kind==='asset'&&life<=0){alert('填摊销月数');return}
+    var updated=normAsset({id:c.id,kind:kind,cat:$('edCat').value,name:nm,amount:amt,date:d,lifeMonths:life,
+      status:c.status,endDate:c.endDate,endAmount:c.endAmount,autoKey:c.autoKey,note:c.note});
+    var arr=v[arrName]||(v[arrName]=[]),idx=-1;
+    arr.forEach(function(x,i){if(x.id===c.id)idx=i});
+    if(idx<0)arr.push(updated);else arr[idx]=updated;
+    close();save();renderAll();
+  };
+}
+function bindAssetDetail(v){
+  var vh=v.vehicle||{},ro=!!v.sealed;
+  $('assetBack').onclick=function(){assetOpenId=null;assetCatMgr=false;wdPage=1;insPage=1;assetPage=1;renderAll()};
+  // 翻页：封存车只读也要能翻页查看
+  if($('wdPrev'))$('wdPrev').onclick=function(){wdPage--;renderAssetTab()};
+  if($('wdNext'))$('wdNext').onclick=function(){wdPage++;renderAssetTab()};
+  if($('insPrev'))$('insPrev').onclick=function(){insPage--;renderAssetTab()};
+  if($('insNext'))$('insNext').onclick=function(){insPage++;renderAssetTab()};
+  if($('asPrev'))$('asPrev').onclick=function(){assetPage--;renderAssetTab()};
+  if($('asNext'))$('asNext').onclick=function(){assetPage++;renderAssetTab()};
+  if(ro)return;   // 封账：写入口一律不绑定，只保留「返回」和翻页
+  function saveField(fn){fn();save();renderAll()}
+  $('vehPlate').onchange=function(){var nv=this.value;saveField(function(){vh.plate=nv;v.plate=nv})};
+  $('vehModel').onchange=function(){var nv=this.value;saveField(function(){vh.model=nv;v.model=nv})};
+  $('vehProp').onchange=function(){var nv=this.value;saveField(function(){vh.property=nv})};
+  $('vehStart').onchange=function(){var nv=this.value;saveField(function(){vh.startDate=nv})};
+  $('vehEnd').onchange=function(){var nv=this.value;saveField(function(){vh.endDate=nv})};
+  // 提现账本
+  $('btnWdAdd').onclick=function(){
+    var d=$('wdDate').value||today(),p=$('wdPlat').value,a=num($('wdAmt').value);
+    if(!p||!a){alert('选平台并填金额');return}
+    if(!Array.isArray(v.withdrawals))v.withdrawals=[];
+    v.withdrawals.push({id:uid(),date:d,plat:p,amount:a,note:''});
+    $('wdAmt').value='';wdPage=1;save();renderAll();
+  };
+  // 保险账本
+  $('insDir').onchange=function(){var inc=this.value==='inflow';$('insLife').disabled=inc;if(inc)$('insLife').value='';else $('insLife').value=autoLife(v,today())||'12'};
+  $('btnInsAdd').onclick=function(){
+    var nm=$('insName').value.trim(),d=$('insDate').value,amt=num($('insAmt').value);
+    if(!nm){alert('填保险名称');return}
+    if(!d){alert('填日期');return}
+    if(amt<=0){alert('填金额');return}
+    var inc=$('insDir').value==='inflow',life=inc?0:num($('insLife').value||12);
+    if(!inc&&life<=0){alert('填摊销月数');return}
+    if(!Array.isArray(v.insurances))v.insurances=[];
+    v.insurances.push(normAsset({id:uid(),kind:inc?'inflow':'asset',cat:inc?'退保':$('insCat').value,name:nm,amount:amt,date:d,lifeMonths:life,status:'active'}));
+    insPage=Math.max(1,Math.ceil(v.insurances.length/4));save();renderAll();
+  };
+  Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-insdel]'),function(b){b.onclick=function(){
+    if(!confirm('删掉这条保险记录？'))return;
+    v.insurances=v.insurances.filter(function(x){return x.id!==b.getAttribute('data-insdel')});save();renderAll();
+  }});
+  Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-insedit]'),function(b){b.onclick=function(){
+    var id=b.getAttribute('data-insedit'),c=(v.insurances||[]).filter(function(x){return x.id===id})[0];if(c)openCardEditModal(v,'insurances',c);
+  }});
+  // 资产流水：类别管理
+  $('asDir2').onchange=function(){assetDir=this.value;renderAssetTab()};
+  $('btnCatMgr').onclick=function(){assetCatMgr=!assetCatMgr;renderAssetTab()};
+  if(assetCatMgr){
+    $('btnAddAssetCat').onclick=function(){
+      var t=$('newAssetCat').value.trim();if(!t)return;
+      var arr=assetCatsOf(v);if(arr.indexOf(t)>=0){alert('已经有这个类别了');return}
+      arr.push(t);v.assetCats=arr;save();renderAssetTab();
+    };
+    $('btnAddInflowCat').onclick=function(){
+      var t=$('newInflowCat').value.trim();if(!t)return;
+      var arr=inflowCatsOf(v);if(arr.indexOf(t)>=0){alert('已经有这个类别了');return}
+      arr.push(t);v.inflowCats=arr;save();renderAssetTab();
+    };
+    Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-acdel]'),function(b){b.onclick=function(){
+      var t=b.getAttribute('data-acdel'),arr=assetCatsOf(v);
+      if(arr.length<=1){alert('至少留一个支出类别');return}
+      v.assetCats=arr.filter(function(z){return z!==t});save();renderAssetTab();
+    }});
+    Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-icdel]'),function(b){b.onclick=function(){
+      var t=b.getAttribute('data-icdel'),arr=inflowCatsOf(v);
+      if(arr.length<=1){alert('至少留一个收入类别');return}
+      v.inflowCats=arr.filter(function(z){return z!==t});save();renderAssetTab();
+    }});
+  }
+  var lastAuto=autoLife(v,$('asDate2')?$('asDate2').value:'');
+  if($('asDate2'))$('asDate2').onchange=function(){
+    if(!$('asLife2'))return;
+    var nv=autoLife(v,this.value);
+    if($('asLife2').value===lastAuto)$('asLife2').value=nv;
+    lastAuto=nv;
+  };
+  $('btnAsAdd2').onclick=function(){
+    var cat=$('asCat2').value,nm=$('asName2').value.trim(),d=$('asDate2').value,amt=num($('asAmt2').value);
+    if(!nm){alert('填资产名称');return}
+    if(amt<=0){alert('填大于 0 的金额');return}
+    if(!d){alert('填日期');return}
+    if(!Array.isArray(v.assets))v.assets=[];
+    if(assetDir==='inflow'){
+      v.assets.push(normAsset({id:uid(),kind:'inflow',cat:cat,name:nm,amount:amt,date:d,lifeMonths:0,status:'active'}));
+    }else{
+      var life=num($('asLife2')?$('asLife2').value:0)||lifeMonthsBetween(d,(v.vehicle||{}).endDate);
+      if(life<=0){alert('填这笔的摊销月数（或先在基础信息里填结束日期）');return}
+      v.assets.push(normAsset({id:uid(),kind:'asset',cat:cat,name:nm,amount:amt,date:d,lifeMonths:life,status:'active'}));
+    }
+    assetPage=Math.max(1,Math.ceil(v.assets.length/4));save();renderAll();
+  };
+  Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-asdel2]'),function(b){b.onclick=function(){
+    if(!confirm('删掉这条资产流水？'))return;
+    v.assets=v.assets.filter(function(a){return a.id!==b.getAttribute('data-asdel2')});save();renderAll();
+  }});
+  Array.prototype.forEach.call($('assetWrap').querySelectorAll('[data-asedit2]'),function(b){b.onclick=function(){
+    var id=b.getAttribute('data-asedit2'),c=(v.assets||[]).filter(function(a){return a.id===id})[0];if(c)openCardEditModal(v,'assets',c);
+  }});
+}
+function kvHTML(b){
+  return b.map(function(a){return '<div class="kv"><div class="k">'+a[0]+'</div><div class="v">'+a[1]+' <small>'+a[2]+'</small></div></div>'}).join('');
+}
+function vehicleChipsHTML(selId,boxId,infoId){
+  var vs=S.vehicles||[],v=statV();
+  if(vs.length<=1){
+    $(boxId).innerHTML=vs.length?'<span style="font-size:15px;font-weight:600">'+esc(v.plate)+(v.model||v.vehicle&&v.vehicle.model?' · '+esc(v.model||v.vehicle.model):'')+'</span>':'<span class="empty" style="padding:0">还没有车</span>';
+  }else{
+    $(boxId).innerHTML='<select id="'+selId+'" style="flex:1 1 180px">'+vs.map(function(x){
+      return '<option value="'+x.id+'"'+(x.id===v.id?' selected':'')+'>'+esc(x.plate)+(x.model||x.vehicle&&x.vehicle.model?' · '+esc(x.model||x.vehicle.model):'')+(x.sealed?'（已封存）':'')+'</option>';
+    }).join('')+'</select>';
+    $(selId).onchange=function(){viewId=this.value;renderAll()};
+  }
+  $(infoId).textContent=v.plate+' · '+(v.model||v.vehicle&&v.vehicle.model||'')+(v.sealed?'（已封存 · 只读）':'')+' · 共 '+Object.keys(v.days||{}).length+' 天记录 · 这里选的是「看哪辆车的账」，不改变当前经营车';
+}
+function renderVehicles(){vehicleChipsHTML('vehSel','vehicleChips','vehicleInfo')}
+function renderListVehicles(){vehicleChipsHTML('listVehSel','listVehChips','listVehInfo')}
+function renderRepInputs(){
+  var m=reportMode,h='';
+  if(m==='day')h='<input type="date" id="repDay" value="'+(repDay||today())+'">';
+  if(m==='week')h='<input type="date" id="repWeek" value="'+(repWeek||today())+'">';
+  if(m==='month')h='<input type="month" id="repMonth" value="'+(repMonth||today().slice(0,7))+'">';
+  if(m==='quarter')h='<input type="number" id="repYear" min="2000" max="2100" value="'+(repYear||today().slice(0,4))+'" placeholder="年">'+
+    '<select id="repQ">'+[1,2,3,4].map(function(q){return '<option value="'+q+'"'+(repQ===q?' selected':'')+'>'+q+'季度</option>'}).join('')+'</select>';
+  if(m==='year')h='<input type="number" id="repYear" min="2000" max="2100" value="'+(repYear||today().slice(0,4))+'" placeholder="年">';
+  if(m==='custom')h='<input type="date" id="repFrom" value="'+(reportFrom||statV().config.realStart||today())+'"><input type="date" id="repTo" value="'+(reportTo||today())+'">';
+  $('repInputs').innerHTML=h;
+  Array.prototype.forEach.call($('repInputs').querySelectorAll('input,select'),function(el){
+    var ev=el.tagName==='SELECT'||el.type==='date'||el.type==='month'?'change':'input';
+    el.addEventListener(ev,function(){
+      if(el.id==='repDay')repDay=el.value;
+      if(el.id==='repWeek')repWeek=el.value;
+      if(el.id==='repMonth')repMonth=el.value;
+      if(el.id==='repYear')repYear=el.value;
+      if(el.id==='repQ')repQ=num(el.value);
+      if(el.id==='repFrom')reportFrom=el.value;
+      if(el.id==='repTo')reportTo=el.value;
+      renderStats();
+    });
+  });
+  Array.prototype.forEach.call($('repModes').querySelectorAll('[data-mode]'),function(b){
+    b.className='chip mini'+(b.getAttribute('data-mode')===m?' on':'');
+  });
+}
+function currentRange(){return reportRange()}
+function withdrawalsByPlatformIn(from,to){
+  var m={};
+  statV().withdrawals.forEach(function(w){
+    if(w.date<from||w.date>to)return;
+    var k=w.plat||'未分类';m[k]=(m[k]||0)+num(w.amount);
+  });
+  return Object.keys(m).map(function(k){return {name:k,amount:m[k]}}).sort(function(x,y){return y.amount-x.amount});
+}
+function renderWdPlatformTable(from,to){
+  var rows=withdrawalsByPlatformIn(from,to);
+  if(!rows.length)return '<div class="hint" style="margin:6px 0 0">本区间没有提现记录。</div>';
+  var h='<table class="wdptable" style="margin-top:6px"><tr><th>平台</th><th>提现金额</th><th>平台</th><th>提现金额</th></tr>';
+  for(var i=0;i<rows.length;i+=2){
+    var x=rows[i],y=rows[i+1];
+    h+='<tr><td>'+esc(x.name)+'</td><td>'+m2(x.amount)+'</td>'+
+       (y?'<td>'+esc(y.name)+'</td><td>'+m2(y.amount)+'</td>':'<td></td><td></td>')+'</tr>';
+  }
+  return h+'</table>';
+}
+function renderNetBox(a,from,to){
+  var h='<h2 style="margin:0 0 10px;font-size:14px;font-weight:600;color:var(--muted);letter-spacing:.5px">两个净利口径</h2>';
+  h+='<table class="nettable"><tr><th>口径</th><th>金额</th><th>含义</th></tr>';
+  h+='<tr><td>经营净利</td><td>'+m2(a.net)+'</td><td class="ntxt">本区间的经营净利：流水+经营收入−经营所需成本</td></tr>';
+  h+='<tr><td>− 保险摊销</td><td>'+m2(a.insDepr)+'</td><td class="ntxt">本区间保险账按天摊掉的部分（保费−退保的净额）</td></tr>';
+  h+='<tr><td>− 资产折旧</td><td>'+m2(a.depr)+'</td><td class="ntxt">本区间资产摊掉的部分（整车+随车净篮子 + 修缮等分支，按天）</td></tr>';
+  h+='<tr><td><strong>回本净利（纯利）</strong></td><td><strong>'+m2(a.netReal)+'</strong></td><td class="ntxt">本统计区间的纯利：干活的收入减去该摊的全部成本</td></tr>';
+  h+='</table>';
+  h+='<div class="hint" style="margin-top:8px">本区间提现 = '+m2(a.wd)+' 元（本区间内各平台提现金额相加）。收回的钱先抵扣整车篮子，不再单独进这张表。</div>';
+  h+=renderWdPlatformTable(from,to);
+  return h;
+}
+function renderStats(){
+  renderVehicles();
+  renderRepInputs();
+  var sv=statV();
+  var r=currentRange(),a=aggregate(r[0],r[1]);
+  $('repRange').textContent=(reportMode==='life'?'一辆车生命周期总账':r[0]+' 至 '+r[1])+' · '+a.count+' 个日历日 · '+a.days+' 个工作日';
+  /* 数据卡 16 项 / 2 列 8 行（11-17 用户口径）
+     总流水 = 平台流水 + 其他收入（顺风车、四轮小件等经营账内所有收入）
+     总余额 = 总流水 − 总支出，不减提现；提现单独列「已提现」
+     「日均」分母 = a.days（有流水/单量/出车时段的日期；只有电费罚款不算工作日）
+     「单小时」分母 = a.H（出车收车之间的小时数之和） */
+  var inc=a.F+a.I,perDay=function(x){return a.days?x/a.days:0},perH=function(x){return a.H?x/a.H:0};
+  var b=[
+    ['工作天数',String(a.days),'天'],            ['总工作时长',m2(a.H),'小时'],
+    ['日均工作时长',m2(perDay(a.H)),'小时'],    ['总行驶里程',m2(a.K),'km'],
+    ['日均行驶里程',m2(perDay(a.K)),'km'],      ['日均单小时里程',m2(perH(a.K)),'km/时'],
+    ['总订单量',String(a.O),'单'],              ['日均单量',m2(perDay(a.O)),'单'],
+    ['日均单小时单量',m2(perH(a.O)),'单/时'],  ['总流水',m2(inc),'元'],
+    ['日均流水',m2(perDay(inc)),'元'],          ['日均单小时流水',m2(perH(inc)),'元/时'],
+    ['平均运价',m2(a.K?inc/a.K:0),'元/km'],    ['总支出',m2(a.C),'元'],
+    ['总余额',m2(inc-a.C),'元'],                ['已提现',m2(a.wd),'元']
+  ];
+  $('monthBox').innerHTML=kvHTML(b);
+  $('netBox').innerHTML=renderNetBox(a,r[0],r[1]);
+  var tot=Object.keys(a.pflow).reduce(function(s,k){return s+a.pflow[k]},0)||1;
+  var ph='<table><tr><th>平台</th><th>流水</th><th>单量</th><th>占比</th></tr>';
+  var shown=0;
+  sv.platforms.forEach(function(p){
+    var f=a.pflow[p.id]||0,o=a.porder[p.id]||0;
+    if(f===0&&o===0)return;          // 区间内没有流水单量的平台不显示
+    shown++;
+    ph+='<tr><td>'+esc(p.name)+'</td><td>'+m2(f)+'</td><td>'+o+'</td><td>'+m2(f/tot*100)+'%</td></tr>';
+    ph+='<tr><td colspan="4" style="padding:0 4px 8px"><div class="bar"><i style="width:'+Math.max(0,Math.min(100,f/tot*100))+'%"></i></div></td></tr>';
+  });
+  $('monthPlatform').innerHTML=shown?ph+'</table>':'<div class="empty">本区间没有平台流水</div>';
+  renderRotate(r[0],r[1]);
+}
+function periodFlowLabel(){
+  if(reportMode==='day')return '当日流水';
+  if(reportMode==='week')return '本周流水';
+  if(reportMode==='month')return '本月流水';
+  if(reportMode==='quarter')return '本季流水';
+  if(reportMode==='year')return '本年流水';
+  return '总流水';                       // 总账 / 自定义
+}
+/* 平台轮换：完全跟随当前统计周期。
+   总计 = 周期内该平台有流水的天数；距上次 = 距周期最后一天（总账/自定义按今天）；
+   周期内一天都没跑过的平台不显示。 */
+function renderRotate(from,to){
+  var sv=statV(),used={},last={},flow={};
+  Object.keys(sv.days).forEach(function(k){
+    if(k<from||k>to)return;
+    var x=sv.days[k],seen={};
+    (x.flows||[]).forEach(function(f){
+      if(!seen[f.pid]){used[f.pid]=(used[f.pid]||0)+1;seen[f.pid]=1}
+      if(!last[f.pid]||k>last[f.pid])last[f.pid]=k;
+      flow[f.pid]=(flow[f.pid]||0)+num(f.amount);
+    });
+  });
+  var refEnd=to;
+  if(refEnd==='9999-12-31'||refEnd>today())refEnd=today();
+  var rows=sv.platforms.map(function(p){
+    return {name:p.name,days:used[p.id]||0,gap:last[p.id]?daysDiff(last[p.id],refEnd):999,flow:flow[p.id]||0,on:p.on};
+  }).filter(function(x){return x.days>0}).sort(function(a2,b){return b.gap-a2.gap});
+  var label=periodFlowLabel();
+  $('rotateTitle').textContent='平台轮换 · '+label.replace('流水','');
+  $('rotateHint').textContent='统计周期内每个平台跑过几天、距上次多少天（距所选周期最后一天）；周期内一天都没跑过的平台不显示。';
+  $('rotateBox').innerHTML=rows.length?('<table><tr><th>平台</th><th>总计</th><th>距上次</th><th>'+label+'</th></tr>'+rows.map(function(r2){
+    var g=r2.gap===999?'从未':(r2.gap===0?'当天':r2.gap+' 天前');
+    return '<tr><td>'+esc(r2.name)+(r2.on?'':' <span class="tag">停用</span>')+'</td><td>'+r2.days+' 天</td><td>'+g+'</td><td>'+m2(r2.flow)+'</td></tr>';
+  }).join('')+'</table>'):'<div class="empty">本区间没有平台流水</div>';
+}
+function renderSet(){
+  var n=S.lastBackup?daysSince(String(S.lastBackup).slice(0,10)):null;
+  $('backupState').innerHTML=n===null?'<strong>还没有备份过。</strong>建议现在就导出一次。':('上次备份：'+String(S.lastBackup).slice(0,10)+'（'+n+' 天前）'+(n>=7?' · <strong style="color:var(--danger)">该备份了</strong>':''));
+  $('platAdmin').innerHTML=S.platforms.map(function(p,i){
+    var usedN=0;
+    Object.keys(S.days||{}).forEach(function(k){
+      (S.days[k].flows||[]).forEach(function(f){if(f.pid===p.id)usedN++});
+    });
+    return '<div class="item"><span class="d"><a href="#" data-pren="'+p.id+'" style="color:var(--blue);text-decoration:none">'+esc(p.name)+'</a>'+
+      (usedN?'<span class="tag">'+usedN+' 笔</span>':'')+'</span>'+
+      '<span class="actbar"><button class="btn sm" data-pup="'+p.id+'" '+(i===0?'disabled':'')+'>↑</button><button class="btn sm" data-pdn="'+p.id+'" '+(i===S.platforms.length-1?'disabled':'')+'>↓</button>'+
+      '<button class="btn sm" data-pt="'+p.id+'">'+(p.on?'停用':'启用')+'</button>'+
+      '<button class="btn sm" data-pdel="'+p.id+'"'+(usedN?' disabled title="有历史流水，不能删；可停用"':'')+'>删</button></span></div>';
+  }).join('');
+  Array.prototype.forEach.call($('platAdmin').querySelectorAll('[data-pt]'),function(b){
+    b.onclick=function(){var id=b.getAttribute('data-pt');S.platforms.forEach(function(p){if(p.id===id)p.on=!p.on});save();renderAll()};
+  });
+  Array.prototype.forEach.call($('platAdmin').querySelectorAll('[data-pren]'),function(a){
+    a.onclick=function(e){
+      e.preventDefault();var id=a.getAttribute('data-pren'),p=S.platforms.filter(function(z){return z.id===id})[0];
+      var v=prompt('改平台名称：',p.name);if(v&&v.trim()){p.name=v.trim();save();renderAll()}
+    };
+  });
+  Array.prototype.forEach.call($('platAdmin').querySelectorAll('[data-pup]'),function(b){
+    b.onclick=function(){var i=S.platforms.map(function(p){return p.id}).indexOf(b.getAttribute('data-pup'));if(i>0){var t=S.platforms[i-1];S.platforms[i-1]=S.platforms[i];S.platforms[i]=t;save();renderAll()}};
+  });
+  Array.prototype.forEach.call($('platAdmin').querySelectorAll('[data-pdn]'),function(b){
+    b.onclick=function(){var i=S.platforms.map(function(p){return p.id}).indexOf(b.getAttribute('data-pdn'));if(i<S.platforms.length-1){var t=S.platforms[i+1];S.platforms[i+1]=S.platforms[i];S.platforms[i]=t;save();renderAll()}};
+  });
+  Array.prototype.forEach.call($('platAdmin').querySelectorAll('[data-pdel]'),function(b){
+    b.onclick=function(){
+      var id=b.getAttribute('data-pdel'),p=S.platforms.filter(function(z){return z.id===id})[0];
+      if(!p)return;
+      if(S.platforms.length<=1){alert('至少留一个平台');return}
+      if(!confirm('删除平台「'+p.name+'」？该平台没有任何历史流水，可以安全删除。'))return;
+      S.platforms=S.platforms.filter(function(z){return z.id!==id});save();renderAll();
+    };
+  });
+  function typeRows(arr,attr,delFn){
+    return arr.map(function(t){return '<span class="chip mini on">'+esc(t)+' <button class="del" data-'+attr+'="'+esc(t)+'" style="color:var(--danger)">×</button></span>'}).join(' ');
+  }
+  $('typeAdmin').innerHTML='<div class="row wrap">'+typeRows(S.costTypes,'tdel')+'</div>';
+  $('incomeTypeAdmin').innerHTML='<div class="row wrap">'+typeRows(S.incomeTypes,'idel')+'</div>';
+  Array.prototype.forEach.call($('typeAdmin').querySelectorAll('[data-tdel]'),function(b){
+    b.onclick=function(){var t=b.getAttribute('data-tdel');if(S.costTypes.length<=1){alert('至少留一个支出类型');return}S.costTypes=S.costTypes.filter(function(z){return z!==t});save();renderAll()};
+  });
+  Array.prototype.forEach.call($('incomeTypeAdmin').querySelectorAll('[data-idel]'),function(b){
+    b.onclick=function(){var t=b.getAttribute('data-idel');if(S.incomeTypes.length<=1){alert('至少留一个收入类型');return}S.incomeTypes=S.incomeTypes.filter(function(z){return z!==t});save();renderAll()};
+  });
+  $('storageState').innerHTML=storageOK?'存储检测：<strong style="color:var(--brand)">正常</strong> · 本机浏览器可正常保存。':'存储检测：<strong style="color:var(--danger)">不可用</strong> · 换网址打开，否则关掉页面数据就没了。';
+}
+function applyReadOnly(){
+  var ro=viewReadOnly(),a=statV(),v=V(),bar=$('viewRoBar');
+  if(!bar)return;
+  if(ro){
+    bar.className='notice bad';
+    bar.innerHTML='当前查看 <strong>'+esc(a.plate||'这辆车')+'</strong>'+(a.sealed?'（已封存 · 封账）':'（非经营车）')+
+      '，这里只能看不能记。当前经营车是「'+esc(v.plate||'')+'」；要给这辆车记账，先到「车辆」里解封并切换经营。';
+  }else bar.className='notice bad hide';
+  Array.prototype.forEach.call(document.querySelectorAll('#tab-add [data-entry] input,#tab-add [data-entry] button,#tab-add [data-entry] select'),
+    function(e){e.disabled=ro});
+}
+function renderAll(){
+  var noVeh=!hasVehicles();
+  $('noVehBar').className=noVeh?'notice bad':'notice bad hide';
+  renderNotice();renderDate();renderShifts();renderFlowPlatforms();renderCostTypes();renderSummary();
+  renderList();renderListVehicles();renderAssetTab();renderStats();renderSet();applyReadOnly();
+}
+function showTab(t){
+  ['add','list','asset','stats','set'].forEach(function(k){$('tab-'+k).className=k===t?'':'hide'});
+  Array.prototype.forEach.call(document.querySelectorAll('nav button'),function(b){b.className=b.getAttribute('data-tab')===t?'on':''});
+  window.scrollTo(0,0);
+}
+function download(name,text,mime){
+  try{
+    var blob=new Blob([text],{type:mime||'text/plain;charset=utf-8'});
+    var url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(function(){URL.revokeObjectURL(url);a.remove()},1500);
+    return true;
+  }catch(e){return false}
+}
+function backup(){
+  var name='网约车台账_备份_'+today()+'.json';
+  if(download(name,JSON.stringify(S,null,2),'application/json;charset=utf-8')){
+    S.lastBackup=today();save();renderAll();
+    alert('备份已导出：'+name+'\n把文件留在手机「下载」目录就行。');
+  }else alert('这个浏览器不允许直接下载，请改用网址打开后再导出。');
+}
+function stampNow(id){
+  // 第一次点带入当前时间；已有值时弹窗阻止，要改请点时间框本身
+  if($(id).value){alert('这里已经填了时间。要改就直接点时间框修改，避免误触覆盖。');return}
+  $(id).value=nowHM();
+}
+function addShift(){
+  if(!canWrite())return;
+  var x=day(curDate),st=normHM($('tStart').value),en=normHM($('tEnd').value),km=num($('tKm').value);
+  if(!st||!en){alert('出车、收车时间按 24 小时制填，如 07:30、18:00（也可点「现在」）');return}
+  if(oneShiftH({start:st,end:en})<=0){alert('收车时间要晚于出车时间');return}
+  x.shifts.push({id:uid(),t:st,start:st,end:en,km:km});
+  $('tStart').value='';$('tEnd').value='';$('tKm').value='';
+  save();renderAll();
+}
+function addFlow(){
+  if(!canWrite())return;
+  var x=day(curDate),a=num($('fAmount').value),o=num($('fOrders').value);
+  if(!selPid){alert('先在「设置 → 平台目录」里加一个平台');return}
+  if(a<=0){alert('填一个大于 0 的金额');$('fAmount').focus();return}
+  if(!$('fOrders').value||o<=0){alert('单量必填：这个平台产生了流水，就有单量。填一个大于 0 的单量。');$('fOrders').focus();return}
+  x.flows.push({id:uid(),t:nowHM(),pid:selPid,amount:a,orders:o});
+  $('fAmount').value='';$('fOrders').value='';
+  save();renderAll();$('fAmount').focus();
+}
+function addEntry(){
+  if(!canWrite())return;
+  var x=day(curDate),a=num($('cAmount').value);
+  var nt=($('cNote')&&$('cNote').value||'').trim();
+  if(!selType){alert('先在「设置」里加一个'+(selKind==='收入'?'收入':'支出')+'类型');return}
+  if(a<=0){alert('填一个大于 0 的金额');$('cAmount').focus();return}
+  // 收入一律只进经营账：赔款分几种（洗车钱进经营、修车钱进资产），不能按类型名自动判断
+  // 跟资产有关的钱由用户到「车辆 → 资产流水」另记一笔，这里不做任何自动转帐
+  x.costs.push({id:uid(),t:nowHM(),kind:selKind,type:selType,amount:a,note:nt});
+  $('cAmount').value='';if($('cNote'))$('cNote').value='';
+  save();renderAll();$('cAmount').focus();
+}
+function bind(){
+  Array.prototype.forEach.call(document.querySelectorAll('nav button'),function(b){b.onclick=function(){showTab(b.getAttribute('data-tab'))}});
+  $('dPrev').onclick=function(){curDate=shiftD(curDate,-1);renderAll()};
+  $('dNext').onclick=function(){curDate=shiftD(curDate,1);renderAll()};
+  $('dPick').onchange=function(){if(this.value){curDate=this.value;renderAll()}};
+  $('btnStart').onclick=function(){stampNow('tStart')};
+  $('btnEnd').onclick=function(){stampNow('tEnd')};
+  $('btnShift').onclick=addShift;
+  $('btnFlow').onclick=addFlow;
+  $('fAmount').onkeydown=function(e){if(e.key==='Enter')addFlow()};
+  $('fOrders').onkeydown=function(e){if(e.key==='Enter')addFlow()};
+  $('kindExpense').onclick=function(){selKind='支出';renderCostTypes()};
+  $('kindIncome').onclick=function(){selKind='收入';renderCostTypes()};
+  $('btnCost').onclick=addEntry;
+  $('cAmount').onkeydown=function(e){if(e.key==='Enter')addEntry()};
+  Array.prototype.forEach.call($('repModes').querySelectorAll('[data-mode]'),function(b){
+    b.onclick=function(){reportMode=b.getAttribute('data-mode');renderStats()};
+  });
+  $('btnBackup').onclick=backup;
+  $('btnRestore').onclick=function(){$('fileIn').click()};
+  $('fileIn').onchange=function(){
+    var f=this.files&&this.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(){
+      try{
+        var o=JSON.parse(r.result);
+        if(!o||(!o.days&&!o.vehicles))throw new Error('格式不对');
+        if(!confirm('用这份备份覆盖当前全部数据？'))return;
+        S=norm(o);viewId='';listPage=1;save();renderAll();alert('已恢复：'+S.vehicles.length+' 个账套，当前 '+Object.keys(S.days).length+' 天记录');
+      }catch(e){alert('导入失败：不是有效的备份文件')}
+    };
+    r.readAsText(f,'utf-8');this.value='';
+  };
+  $('btnAddPlat').onclick=function(){
+    var v=$('newPlat').value.trim();if(!v)return;
+    if(S.platforms.some(function(p){return p.name===v})){alert('已经有这个平台了');return}
+    S.platforms.push({id:'p'+uid(),name:v,on:true});$('newPlat').value='';save();renderAll();
+  };
+  $('btnCleanPlat').onclick=function(){
+    if(guardRO(V(),'清理平台'))return;
+    var used={};
+    Object.keys(S.days||{}).forEach(function(k){
+      (S.days[k].flows||[]).forEach(function(f){used[f.pid]=1});
+    });
+    var dead=S.platforms.filter(function(p){return !used[p.id]});
+    if(!dead.length){alert('没有无流水的平台');return}
+    if(!confirm('删除这 '+dead.length+' 个没有任何流水的平台？\n'+dead.map(function(p){return p.name}).join('、')))return;
+    S.platforms=S.platforms.filter(function(p){return used[p.id]});save();renderAll();
+  };
+  $('btnAddType').onclick=function(){
+    var v=$('newType').value.trim();if(!v)return;
+    if(S.costTypes.indexOf(v)>=0)return;
+    S.costTypes.push(v);selKind='支出';selType=v;$('newType').value='';save();renderAll();
+  };
+  $('btnAddIncomeType').onclick=function(){
+    var v=$('newIncomeType').value.trim();if(!v)return;
+    if(S.incomeTypes.indexOf(v)>=0)return;
+    S.incomeTypes.push(v);selKind='收入';selType=v;$('newIncomeType').value='';save();renderAll();
+  };
+  $('btnClear').onclick=function(){
+    if(!confirm('清空全部数据？此操作不可恢复。'))return;
+    if(!confirm('再确认一次：建议先导出备份。真的清空？'))return;
+    S=bindMirror(freshState());viewId='';listPage=1;save();renderAll();
+  };
+}
+probe();S=load();curDate=today();
+bind();renderAll();
+if((location.protocol==='http:'||location.protocol==='https:')&&'serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(function(){});
+}
+</script>
+</body>
+</html>
