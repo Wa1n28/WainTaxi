@@ -76,6 +76,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 .tag{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-left:6px}
 .actbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
 .actbar .btn{padding:5px 9px;min-height:30px;font-size:12px}
+.actbar .btn.punchbtn{padding:3px 6px;min-height:32px;line-height:1.15;text-align:center;white-space:normal}
 .modal{position:fixed;left:0;right:0;top:0;bottom:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:30}
 .modal .sheet{background:var(--card);width:100%;max-width:480px;border-radius:16px 16px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));max-height:75vh;overflow:auto}
 .modal .sheet h3{margin:0 0 12px;font-size:15px;font-weight:600}
@@ -112,7 +113,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 <div class="wrap">
 
   <div class="top">
-    <div><h1>WainTaxi<span class="ver">v7.05</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div><h1>WainTaxi<span class="ver">v7.06</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
     <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
   </div>
   <div id="notice"></div>
@@ -135,8 +136,8 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
     <div class="card" data-entry>
       <h2>工作时段（一天可分多段）</h2>
       <div class="grid3">
-        <div><label class="f">出车</label><div class="actbar"><input type="text" inputmode="numeric" id="tStart" class="grow" placeholder="07:30" maxlength="5"><button class="btn sm" id="btnStart" title="出车打卡：记下当前时间并自动保存">出车打卡</button></div></div>
-        <div><label class="f">收车</label><div class="actbar"><input type="text" inputmode="numeric" id="tEnd" class="grow" placeholder="18:00" maxlength="5"><button class="btn sm" id="btnEnd" title="收车打卡：记下当前时间并自动保存">收车打卡</button></div></div>
+        <div><label class="f">出车</label><div class="actbar"><input type="text" inputmode="numeric" id="tStart" class="grow" placeholder="07:30" maxlength="5"><button class="btn sm punchbtn" id="btnStart" title="出车打卡：记下当前时间并自动保存">出车<br>打卡</button></div></div>
+        <div><label class="f">收车</label><div class="actbar"><input type="text" inputmode="numeric" id="tEnd" class="grow" placeholder="18:00" maxlength="5"><button class="btn sm punchbtn" id="btnEnd" title="收车打卡：记下当前时间并自动保存">收车<br>打卡</button></div></div>
         <div><label class="f">里程 km</label><input type="number" inputmode="decimal" id="tKm" placeholder="0"></div>
       </div>
       <button class="btn primary full" id="btnShift" style="margin-top:12px">保存这一段</button>
@@ -1532,9 +1533,10 @@ function punch(kind){
   var x=day(curDate),t=nowHM();
   if(!x.clock||typeof x.clock!=='object')x.clock={};
   var prev=x.clock[kind];
-  if(prev&&prev===t){toast('本时段已'+CLOCK_TIPS[kind]+' '+prev);return}
+  if(prev&&prev===t){toast('本时段已'+CLOCK_TIPS[kind]+' '+prev);renderClock();return}
   x.clock[kind]=t;
   save();
+  renderClock();
   var msg=CLOCK_TIPS[kind]+' '+t;
   if(kind==='start'&&x.clock.end){toast(msg+'（收车打卡 '+x.clock.end+'）')}
   else if(kind==='end'&&!x.clock.start){toast(msg+' · 还没出车打卡')}
