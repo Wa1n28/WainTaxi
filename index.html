@@ -17,6 +17,8 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 -apple-system
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 2px 12px}
 .top h1{margin:0;font-size:18px;font-weight:600;letter-spacing:.5px}
 .top h1 .ver{font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0;margin-left:6px;vertical-align:middle}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:22px;font-size:14px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999;max-width:80vw;text-align:center;white-space:nowrap}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .top .sub{font-size:12px;color:var(--muted)}
 .top .sign{font-size:11px;color:var(--muted);text-align:right;line-height:1.5;white-space:nowrap}
 .notice{background:#FFF6E5;color:#7a5210;border:1px solid #f0d9a8;border-radius:var(--r);padding:10px 12px;font-size:13px;margin-bottom:12px;cursor:pointer}
@@ -110,7 +112,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 <div class="wrap">
 
   <div class="top">
-    <div><h1>WainTaxi<span class="ver">v7.04</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div><h1>WainTaxi<span class="ver">v7.05</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
     <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
   </div>
   <div id="notice"></div>
@@ -133,8 +135,8 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
     <div class="card" data-entry>
       <h2>工作时段（一天可分多段）</h2>
       <div class="grid3">
-        <div><label class="f">出车</label><div class="actbar"><input type="text" inputmode="numeric" id="tStart" class="grow" placeholder="07:30" maxlength="5"><button class="btn sm" id="btnStart" title="第一次点带入现在时间">现在</button></div></div>
-        <div><label class="f">收车</label><div class="actbar"><input type="text" inputmode="numeric" id="tEnd" class="grow" placeholder="18:00" maxlength="5"><button class="btn sm" id="btnEnd" title="第一次点带入现在时间">现在</button></div></div>
+        <div><label class="f">出车</label><div class="actbar"><input type="text" inputmode="numeric" id="tStart" class="grow" placeholder="07:30" maxlength="5"><button class="btn sm" id="btnStart" title="出车打卡：记下当前时间并自动保存">出车打卡</button></div></div>
+        <div><label class="f">收车</label><div class="actbar"><input type="text" inputmode="numeric" id="tEnd" class="grow" placeholder="18:00" maxlength="5"><button class="btn sm" id="btnEnd" title="收车打卡：记下当前时间并自动保存">收车打卡</button></div></div>
         <div><label class="f">里程 km</label><input type="number" inputmode="decimal" id="tKm" placeholder="0"></div>
       </div>
       <button class="btn primary full" id="btnShift" style="margin-top:12px">保存这一段</button>
@@ -791,6 +793,11 @@ function renderDate(){
   // 录入区临时字段，切日期时清空，避免把别的天的草稿带过来
   $('tStart').value='';$('tEnd').value='';$('tKm').value='';
   $('workHint').textContent=x.shifts.length?('共 '+x.shifts.length+' 段，工作时长与里程见下方「当日合计」。真跨天（收车在次日）暂按当天记。'):'填出车、收车、里程后点「保存这一段」，可分多段。';
+}
+function renderClock(){
+  var x=viewDay(curDate),c=(x&&x.clock)||{};
+  $('tStart').value=c.start||'';
+  $('tEnd').value=c.end||'';
 }
 function renderShifts(){
   var x=viewDay(curDate),h='',ro=viewReadOnly();
@@ -1478,7 +1485,7 @@ function applyReadOnly(){
 function renderAll(){
   var noVeh=!hasVehicles();
   $('noVehBar').className=noVeh?'notice bad':'notice bad hide';
-  renderNotice();renderDate();renderShifts();renderFlowPlatforms();renderCostTypes();renderSummary();
+  renderNotice();renderDate();renderClock();renderShifts();renderFlowPlatforms();renderCostTypes();renderSummary();
   renderList();renderListVehicles();renderAssetTab();renderStats();renderSet();applyReadOnly();
 }
 function showTab(t){
@@ -1496,11 +1503,42 @@ function download(name,text,mime){
   }catch(e){return false}
 }
 function backup(){
-  var name='网约车台账_备份_'+today()+'.json';
-  if(download(name,JSON.stringify(S,null,2),'application/json;charset=utf-8')){
+  var name='WainTaxi_备份_'+today()+'.json';
+  var text=JSON.stringify(S,null,2);
+  // App 原生桥：直接把文件写到系统「下载」目录（绕开 WebView blob 下载不落盘的问题）
+  if(window.WainTaxiBridge && typeof window.WainTaxiBridge.saveFile==='function'){
+    try{
+      window.WainTaxiBridge.saveFile(name,text);
+      S.lastBackup=today();save();renderAll();
+      return;
+    }catch(e){alert('保存到下载目录失败：'+e.message);return}
+  }
+  if(download(name,text,'application/json;charset=utf-8')){
     S.lastBackup=today();save();renderAll();
-    alert('备份已导出：'+name+'\n把文件留在手机「下载」目录就行。');
+    toast('已导出 '+name);
+    alert('备份文件：'+name+'\n到浏览器「下载」里找。');
   }else alert('这个浏览器不允许直接下载，请改用网址打开后再导出。');
+}
+function toast(msg){
+  var t=document.getElementById('toast');
+  if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t)}
+  t.textContent=msg;t.className='on';
+  clearTimeout(toast._tm);toast._tm=setTimeout(function(){t.className=''},2200);
+}
+// 打卡：时间写入当天数据的 clock 字段并立即存到本地，切后台/杀进程/关 App 都不丢。
+var CLOCK_TIPS={start:'已出车',end:'已收车'};
+function punch(kind){
+  if(!canWrite())return;
+  var x=day(curDate),t=nowHM();
+  if(!x.clock||typeof x.clock!=='object')x.clock={};
+  var prev=x.clock[kind];
+  if(prev&&prev===t){toast('本时段已'+CLOCK_TIPS[kind]+' '+prev);return}
+  x.clock[kind]=t;
+  save();
+  var msg=CLOCK_TIPS[kind]+' '+t;
+  if(kind==='start'&&x.clock.end){toast(msg+'（收车打卡 '+x.clock.end+'）')}
+  else if(kind==='end'&&!x.clock.start){toast(msg+' · 还没出车打卡')}
+  else toast(msg);
 }
 function stampNow(id){
   // 第一次点带入当前时间；已有值时弹窗阻止，要改请点时间框本身
@@ -1510,11 +1548,12 @@ function stampNow(id){
 function addShift(){
   if(!canWrite())return;
   var x=day(curDate),st=normHM($('tStart').value),en=normHM($('tEnd').value),km=num($('tKm').value);
-  if(!st||!en){alert('出车、收车时间按 24 小时制填，如 07:30、18:00（也可点「现在」）');return}
+  if(!st||!en){alert('出车、收车时间按 24 小时制填，如 07:30、18:00（也可点打卡按钮）');return}
   if(oneShiftH({start:st,end:en})<=0){alert('收车时间要晚于出车时间');return}
   x.shifts.push({id:uid(),t:st,start:st,end:en,km:km});
+  x.clock={};
   $('tStart').value='';$('tEnd').value='';$('tKm').value='';
-  save();renderAll();
+  save();renderAll();toast('本段已保存 '+st+' → '+en);
 }
 function addFlow(){
   if(!canWrite())return;
@@ -1543,8 +1582,8 @@ function bind(){
   $('dPrev').onclick=function(){curDate=shiftD(curDate,-1);renderAll()};
   $('dNext').onclick=function(){curDate=shiftD(curDate,1);renderAll()};
   $('dPick').onchange=function(){if(this.value){curDate=this.value;renderAll()}};
-  $('btnStart').onclick=function(){stampNow('tStart')};
-  $('btnEnd').onclick=function(){stampNow('tEnd')};
+  $('btnStart').onclick=function(){punch('start')};
+  $('btnEnd').onclick=function(){punch('end')};
   $('btnShift').onclick=addShift;
   $('btnFlow').onclick=addFlow;
   $('fAmount').onkeydown=function(e){if(e.key==='Enter')addFlow()};
