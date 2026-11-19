@@ -130,7 +130,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 <div class="wrap">
 
   <div class="top">
-    <div><h1>WainTaxi<span class="ver">v7.11</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div><h1>WainTaxi<span class="ver">v7.12</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
     <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
   </div>
   <div id="notice"></div>
@@ -1406,52 +1406,69 @@ function renderStats(){
   if(kvExp)kvExp.onclick=function(){openExpenseDetail(r[0],r[1])};
   renderRotate(r[0],r[1]);
 }
-/* 总支出 → 二级明细：统计区间内所有支出流水（不按天汇总），每页 30 笔，日期可点回当日合计 */
-var expPage=1;
+/* 总支出 → 二级明细：统计区间内所有支出流水（不按天汇总），每页 30 笔，可按类型/备注关键词筛选，日期可点回当日合计 */
+var expPage=1,expFilterText='';
 function openExpenseDetail(from,to){
   var sv=statV(),rows=[];
   Object.keys(sv.days||{}).forEach(function(k){
     if(k<from||k>to)return;
     ((sv.days[k]||{}).costs||[]).forEach(function(c){
       if(c.kind==='收入')return;
-      rows.push({date:k,t:c.t||'',desc:esc('支出 · '+c.type)+(c.note?' <span style="color:var(--muted)">· '+esc(c.note)+'</span>':''),amt:num(c.amount)});
+      var typ=c.type||'',note=c.note||'';
+      rows.push({date:k,t:c.t||'',raw:'支出 · '+typ+(note?' · '+note:''),
+        desc:esc('支出 · '+typ)+(note?' <span style="color:var(--muted)">· '+esc(note)+'</span>':''),amt:num(c.amount)});
     });
   });
   rows.sort(function(x,y){return x.date===y.date?(x.t<y.t?1:-1):(x.date<y.date?1:-1)});
-  expPage=1;
+  expPage=1;expFilterText='';
   var mask=document.createElement('div');mask.className='modal';
   var label=($('repRange')&&$('repRange').textContent||'').split(' · ')[0]||(from+' 至 '+to);
   function close(){mask.remove()}
+  // 骨架只建一次：筛选框在 draw() 重绘表格时不会被替换，输入焦点和光标不丢
+  mask.innerHTML='<div class="sheet"><h3>支出明细 · '+esc(label)+'</h3>'+
+    '<div class="hint" id="expInfo" style="margin:0 0 10px"></div>'+
+    '<table class="exptable" id="expTable"></table>'+
+    '<div class="row" style="margin:10px 0">'+
+      '<input type="text" id="expFilter" placeholder="筛选类型或备注，如：免佣卡" style="flex:1 1 auto;min-width:0">'+
+      '<span id="expTotal" style="flex:0 0 auto;white-space:nowrap;font-size:12px;color:var(--muted)"></span>'+
+    '</div>'+
+    '<div id="expPager"></div>'+
+    '<button class="btn full" id="expClose" style="margin-top:12px">关闭</button></div>';
   function draw(){
-    var pages=Math.max(1,Math.ceil(rows.length/30));
+    var kw=expFilterText.trim();
+    var list=kw?rows.filter(function(x){return x.raw.indexOf(kw)>=0}):rows;
+    var total=list.reduce(function(s,x){return s+x.amt},0);
+    var pages=Math.max(1,Math.ceil(list.length/30));
     if(expPage>pages)expPage=pages;
     if(expPage<1)expPage=1;
-    var slice=rows.slice((expPage-1)*30,expPage*30);
-    var h='<div class="sheet"><h3>支出明细 · '+esc(label)+'</h3>';
-    h+='<div class="hint" style="margin:0 0 10px">共 '+rows.length+' 笔 · 合计 '+m2(rows.reduce(function(s,x){return s+x.amt},0))+' 元 · 第 '+expPage+' / '+pages+' 页。点日期跳到那天的当日合计。</div>';
+    var slice=list.slice((expPage-1)*30,expPage*30);
+    $('expInfo').textContent='共 '+list.length+' 笔 · 第 '+expPage+' / '+pages+' 页。点日期跳到那天的当日合计。';
+    $('expTotal').innerHTML='合计 <strong style="color:var(--brand)">'+m2(total)+'</strong> 元';
     if(slice.length){
-      h+='<table class="exptable"><tr><th>日期</th><th>类型 / 备注</th><th>金额</th></tr>';
+      var h='<tr><th>日期</th><th>类型 / 备注</th><th>金额</th></tr>';
       slice.forEach(function(x){
         h+='<tr><td class="expdate"><a href="#" data-jump="'+x.date+'">'+x.date.slice(5)+' 周'+weekday(x.date)+'</a></td><td class="expd">'+x.desc+'</td><td>'+m2(x.amt)+'</td></tr>';
       });
-      h+='</table>';
-      if(pages>1)h+='<div class="row" style="margin-top:10px;align-items:center;justify-content:space-between">'+
+      $('expTable').innerHTML=h;
+    }else $('expTable').innerHTML='<tr><td colspan="3"><div class="empty">'+(kw?'没有匹配的支出项':'本区间没有支出记录')+'</div></td></tr>';
+    if(pages>1){
+      $('expPager').innerHTML='<div class="row" style="justify-content:space-between">'+
         '<button class="btn sm" id="expPrev"'+(expPage<=1?' disabled':'')+'>‹ 上一页</button>'+
         '<span style="font-size:12px;color:var(--muted)">第 '+expPage+' / '+pages+' 页</span>'+
         '<button class="btn sm" id="expNext"'+(expPage>=pages?' disabled':'')+'>下一页 ›</button></div>';
-    }else h+='<div class="empty">本区间没有支出记录</div>';
-    h+='<button class="btn full" id="expClose" style="margin-top:12px">关闭</button></div>';
-    mask.innerHTML=h;
-    $('expClose').onclick=close;
-    if($('expPrev'))$('expPrev').onclick=function(){expPage--;draw()};
-    if($('expNext'))$('expNext').onclick=function(){expPage++;draw()};
-    Array.prototype.forEach.call(mask.querySelectorAll('[data-jump]'),function(a){
+      $('expPrev').onclick=function(){expPage--;draw()};
+      $('expNext').onclick=function(){expPage++;draw()};
+    }else $('expPager').innerHTML='';
+    Array.prototype.forEach.call($('expTable').querySelectorAll('[data-jump]'),function(a){
       a.onclick=function(e){e.preventDefault();var k=a.getAttribute('data-jump');close();curDate=k;showTab('add');renderAll();scrollSum()};
     });
   }
   mask.onclick=function(e){if(e.target===mask)close()};
   document.body.appendChild(mask);
+  $('expFilter').oninput=function(){expFilterText=this.value;expPage=1;draw()};
+  $('expClose').onclick=close;
   draw();
+  $('expFilter').focus();
 }
 function periodFlowLabel(){
   if(reportMode==='day')return '当日流水';
