@@ -4,8 +4,8 @@
 
 一个给网约车司机用的**纯本机记账网页**：按笔记录流水和支出，其余（汇总、周期报告、摊销、净利）全部自动算。数据只存在你自己的浏览器里，不上传任何服务器。
 
-- 在线地址：<https://fwwcn.github.io/WainTaxi/>
-- 作者：闲驰京尘支架人 [@Wa1n28](https://github.com/fwwcn)
+- 在线地址：<https://Wa1n28.github.io/WainTaxi/>
+- 作者：闲驰京尘支架人 [@Wa1n28](https://github.com/Wa1n28)
 
 ---
 
@@ -52,7 +52,7 @@
 
 网页本身可直接用浏览器打开。若想做成 App：本项目同时提供 Android 原生壳（Capacitor）打包的 APK，安装后同样在 App 内手动导入 JSON，数据依然只在本机。
 
-- **APK 下载**：<https://fwwcn.github.io/WainTaxi/WainTaxi.apk>（当前 **v7.12**，系统版本名 `7.12` / versionCode `712`）
+- **APK 下载**：<https://Wa1n28.github.io/WainTaxi/WainTaxi.apk>（当前 **v7.12**，系统版本名 `7.12` / versionCode `712`）
 - 安装后首次打开是空账套：在「设置 → 导入恢复」选 JSON 备份文件即可。
 - 网页版更新后，APK 需要重新打包才会包含新功能；页面左上角版本号可用于区分网页与 App 内版本。
 

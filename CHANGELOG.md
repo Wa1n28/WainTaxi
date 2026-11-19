@@ -11,7 +11,7 @@
 
 - APK 同步打包到 v7.12，包含 v7.10–v7.12 全部网页改动（日期翻页入当日合计、日期卡片标题、总支出二级明细 + 关键词筛选联动合计）
 - Android 系统版本：`versionName 7.09 → 7.12`、`versionCode 709 → 712`，升级时显示正确版本
-- 内嵌网页与 sw 缓存均为 v7.12，固定下载链接不变：<https://fwwcn.github.io/WainTaxi/WainTaxi.apk>
+- 内嵌网页与 sw 缓存均为 v7.12，固定下载链接不变：<https://Wa1n28.github.io/WainTaxi/WainTaxi.apk>
 
 ## v7.12（2026-11-19）
 
@@ -45,7 +45,7 @@
 - 保留 v7.08 的「点记一笔回今天」
 - 离线缓存版本与显示版本统一为 v7.09
 - **APK 同步打包**：内嵌网页从 v7.05 升级到 v7.09；Android 系统版本名由 `7.03` 改为 `7.09`、versionCode 由 `703` 改为 `709`（此前 App 升级界面一直显示 7.03）
-- 新增固定下载链接：<https://fwwcn.github.io/WainTaxi/WainTaxi.apk>
+- 新增固定下载链接：<https://Wa1n28.github.io/WainTaxi/WainTaxi.apk>
 
 ## v7.08（2026-11-19）
 
