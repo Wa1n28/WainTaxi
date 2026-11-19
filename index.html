@@ -88,6 +88,23 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 .vehOpt{display:flex;align-items:center;gap:8px;padding:12px 4px;border-bottom:1px solid var(--line);cursor:pointer}
 .vehOpt:last-child{border:none}
 .vehOpt.on{color:var(--brand);font-weight:600}
+/* 当日合计：日期翻页放在卡片标题处（前一天 / 日期 / 后一天） */
+.daynav{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.daynav .btn{flex:0 0 auto;min-height:34px;padding:5px 8px;font-size:12px}
+.daynavDate{position:relative;flex:1 1 auto;min-width:0;text-align:center;font-size:15px;font-weight:600;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.daynavDate input{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;border:0;padding:0}
+/* 数据卡可点击（总支出 → 支出明细） */
+.kvlink{cursor:pointer}
+.kvlink .v{color:var(--brand)}
+.kvarrow{color:var(--brand);font-size:15px}
+/* 支出明细二级表：列宽固定、描述可换行 */
+.exptable{table-layout:fixed}
+.exptable th:nth-child(1),.exptable td:nth-child(1){width:27%}
+.exptable th:nth-child(2),.exptable td:nth-child(2){width:51%}
+.exptable th:nth-child(3),.exptable td:nth-child(3){width:22%}
+.exptable td{white-space:normal;word-break:break-all;font-size:12px;line-height:1.45}
+.exptable td.expd{text-align:left}
+.exptable td.expdate a{color:var(--blue);text-decoration:none}
 /* 两个净利口径：含义列要能换行，不然窄屏整张表撑破页宽 */
 .nettable{table-layout:fixed}
 .nettable th:nth-child(1),.nettable td:nth-child(1){width:27%}
@@ -113,7 +130,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 <div class="wrap">
 
   <div class="top">
-    <div><h1>WainTaxi<span class="ver">v7.09</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div><h1>WainTaxi<span class="ver">v7.10</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
     <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
   </div>
   <div id="notice"></div>
@@ -121,12 +138,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
   <section id="tab-add">
     <div class="card">
       <div class="row wrap">
-        <div style="flex:0 1 120px;min-width:105px"><button class="vehPickBtn" id="vehPick"></button></div>
-        <div class="row" style="flex:0 1 auto;min-width:0">
-          <button class="btn sm" id="dPrev" style="padding:5px 4px">&lt;</button>
-          <input type="date" id="dPick" style="flex:0 0 120px;width:120px;min-width:0;padding-left:2px;padding-right:2px">
-          <button class="btn sm" id="dNext" style="padding:5px 4px">&gt;</button>
-        </div>
+        <div style="flex:1 1 100%;min-width:0"><button class="vehPickBtn" id="vehPick"></button></div>
       </div>
       <div class="hint" id="dLabel"></div>
       <div id="noVehBar" class="notice bad hide">你还没有车。先到「资产」页添加车辆信息，再开始经营记账。</div>
@@ -177,7 +189,12 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
     </div>
 
     <div class="card" id="sumCard">
-      <h2>当日合计（自动）</h2>
+      <div class="daynav">
+        <button class="btn sm" id="dPrev" title="前一天">前一天</button>
+        <div class="daynavDate"><span id="dLabelDate"></span><input type="date" id="dPick" aria-label="选择日期"></div>
+        <button class="btn sm" id="dNext" title="后一天">后一天</button>
+      </div>
+      <div class="hint" style="margin:0 0 10px">当日合计（自动）</div>
       <div class="grid" id="sumBox"></div>
       <div class="split"></div>
       <div id="dayItems"></div>
@@ -787,6 +804,7 @@ function openVehPicker(){
 }
 function renderDate(){
   $('dPick').value=curDate;
+  $('dLabelDate').textContent=curDate;
   renderVehPick();
   var x=viewDay(curDate),c=calc(x);
   var n=x.shifts.length+x.flows.length+x.costs.length;
@@ -891,7 +909,7 @@ function renderList(){
     '<button class="btn sm" id="listNext"'+(listPage>=pages?' disabled':'')+'>下一页 ›</button></div>';
   $('dayList').innerHTML=h;
   Array.prototype.forEach.call($('dayList').querySelectorAll('[data-jump]'),function(a){
-    a.onclick=function(e){e.preventDefault();curDate=a.getAttribute('data-jump');showTab('add');renderAll();var el=document.getElementById('sumCard');if(el)el.scrollIntoView({block:'start'})};
+    a.onclick=function(e){e.preventDefault();curDate=a.getAttribute('data-jump');showTab('add');renderAll();scrollSum()};
   });
   if($('listPrev'))$('listPrev').onclick=function(){listPage--;renderList()};
   if($('listNext'))$('listNext').onclick=function(){listPage++;renderList()};
@@ -1274,7 +1292,7 @@ function bindAssetDetail(v){
   }});
 }
 function kvHTML(b){
-  return b.map(function(a){return '<div class="kv"><div class="k">'+a[0]+'</div><div class="v">'+a[1]+' <small>'+a[2]+'</small></div></div>'}).join('');
+  return b.map(function(a){return '<div class="kv'+(a[3]?' kvlink':'')+'"'+(a[3]?' data-kv="'+a[3]+'"':'')+'><div class="k">'+a[0]+'</div><div class="v">'+a[1]+' <small>'+a[2]+'</small>'+(a[3]?' <span class="kvarrow">›</span>':'')+'</div></div>'}).join('');
 }
 function vehicleChipsHTML(selId,boxId,infoId){
   var vs=S.vehicles||[],v=statV();
@@ -1368,7 +1386,7 @@ function renderStats(){
     ['总订单量',String(a.O),'单'],              ['日均单量',m2(perDay(a.O)),'单'],
     ['日均单小时单量',m2(perH(a.O)),'单/时'],  ['总流水',m2(inc),'元'],
     ['日均流水',m2(perDay(inc)),'元'],          ['日均单小时流水',m2(perH(inc)),'元/时'],
-    ['平均运价',m2(a.K?inc/a.K:0),'元/km'],    ['总支出',m2(a.C),'元'],
+    ['平均运价',m2(a.K?inc/a.K:0),'元/km'],    ['总支出',m2(a.C),'元','expense'],
     ['总余额',m2(inc-a.C),'元'],                ['已提现',m2(a.wd),'元']
   ];
   $('monthBox').innerHTML=kvHTML(b);
@@ -1384,7 +1402,56 @@ function renderStats(){
     ph+='<tr><td colspan="4" style="padding:0 4px 8px"><div class="bar"><i style="width:'+Math.max(0,Math.min(100,f/tot*100))+'%"></i></div></td></tr>';
   });
   $('monthPlatform').innerHTML=shown?ph+'</table>':'<div class="empty">本区间没有平台流水</div>';
+  var kvExp=$('monthBox').querySelector('[data-kv="expense"]');
+  if(kvExp)kvExp.onclick=function(){openExpenseDetail(r[0],r[1])};
   renderRotate(r[0],r[1]);
+}
+/* 总支出 → 二级明细：统计区间内所有支出流水（不按天汇总），每页 30 笔，日期可点回当日合计 */
+var expPage=1;
+function openExpenseDetail(from,to){
+  var sv=statV(),rows=[];
+  Object.keys(sv.days||{}).forEach(function(k){
+    if(k<from||k>to)return;
+    ((sv.days[k]||{}).costs||[]).forEach(function(c){
+      if(c.kind==='收入')return;
+      rows.push({date:k,t:c.t||'',desc:esc('支出 · '+c.type)+(c.note?' <span style="color:var(--muted)">· '+esc(c.note)+'</span>':''),amt:num(c.amount)});
+    });
+  });
+  rows.sort(function(x,y){return x.date===y.date?(x.t<y.t?1:-1):(x.date<y.date?1:-1)});
+  expPage=1;
+  var mask=document.createElement('div');mask.className='modal';
+  var label=($('repRange')&&$('repRange').textContent||'').split(' · ')[0]||(from+' 至 '+to);
+  function close(){mask.remove()}
+  function draw(){
+    var pages=Math.max(1,Math.ceil(rows.length/30));
+    if(expPage>pages)expPage=pages;
+    if(expPage<1)expPage=1;
+    var slice=rows.slice((expPage-1)*30,expPage*30);
+    var h='<div class="sheet"><h3>支出明细 · '+esc(label)+'</h3>';
+    h+='<div class="hint" style="margin:0 0 10px">共 '+rows.length+' 笔 · 合计 '+m2(rows.reduce(function(s,x){return s+x.amt},0))+' 元 · 第 '+expPage+' / '+pages+' 页。点日期跳到那天的当日合计。</div>';
+    if(slice.length){
+      h+='<table class="exptable"><tr><th>日期</th><th>类型 / 备注</th><th>金额</th></tr>';
+      slice.forEach(function(x){
+        h+='<tr><td class="expdate"><a href="#" data-jump="'+x.date+'">'+x.date.slice(5)+' 周'+weekday(x.date)+'</a></td><td class="expd">'+x.desc+'</td><td>'+m2(x.amt)+'</td></tr>';
+      });
+      h+='</table>';
+      if(pages>1)h+='<div class="row" style="margin-top:10px;align-items:center;justify-content:space-between">'+
+        '<button class="btn sm" id="expPrev"'+(expPage<=1?' disabled':'')+'>‹ 上一页</button>'+
+        '<span style="font-size:12px;color:var(--muted)">第 '+expPage+' / '+pages+' 页</span>'+
+        '<button class="btn sm" id="expNext"'+(expPage>=pages?' disabled':'')+'>下一页 ›</button></div>';
+    }else h+='<div class="empty">本区间没有支出记录</div>';
+    h+='<button class="btn full" id="expClose" style="margin-top:12px">关闭</button></div>';
+    mask.innerHTML=h;
+    $('expClose').onclick=close;
+    if($('expPrev'))$('expPrev').onclick=function(){expPage--;draw()};
+    if($('expNext'))$('expNext').onclick=function(){expPage++;draw()};
+    Array.prototype.forEach.call(mask.querySelectorAll('[data-jump]'),function(a){
+      a.onclick=function(e){e.preventDefault();var k=a.getAttribute('data-jump');close();curDate=k;showTab('add');renderAll();scrollSum()};
+    });
+  }
+  mask.onclick=function(e){if(e.target===mask)close()};
+  document.body.appendChild(mask);
+  draw();
 }
 function periodFlowLabel(){
   if(reportMode==='day')return '当日流水';
@@ -1489,6 +1556,7 @@ function renderAll(){
   renderNotice();renderDate();renderClock();renderShifts();renderFlowPlatforms();renderCostTypes();renderSummary();
   renderList();renderListVehicles();renderAssetTab();renderStats();renderSet();applyReadOnly();
 }
+function scrollSum(){var el=document.getElementById('sumCard');if(el)el.scrollIntoView({block:'start'})}
 function showTab(t){
   ['add','list','asset','stats','set'].forEach(function(k){$('tab-'+k).className=k===t?'':'hide'});
   Array.prototype.forEach.call(document.querySelectorAll('nav button'),function(b){b.className=b.getAttribute('data-tab')===t?'on':''});
@@ -1581,9 +1649,9 @@ function addEntry(){
 }
 function bind(){
   Array.prototype.forEach.call(document.querySelectorAll('nav button'),function(b){b.onclick=function(){var t=b.getAttribute('data-tab');if(t==='add'&&curDate!==today()){curDate=today();renderAll()}showTab(t)}});
-  $('dPrev').onclick=function(){curDate=shiftD(curDate,-1);renderAll()};
-  $('dNext').onclick=function(){curDate=shiftD(curDate,1);renderAll()};
-  $('dPick').onchange=function(){if(this.value){curDate=this.value;renderAll()}};
+  $('dPrev').onclick=function(){curDate=shiftD(curDate,-1);renderAll();scrollSum()};
+  $('dNext').onclick=function(){curDate=shiftD(curDate,1);renderAll();scrollSum()};
+  $('dPick').onchange=function(){if(this.value){curDate=this.value;renderAll();scrollSum()}};
   $('btnStart').onclick=function(){punch('start')};
   $('btnEnd').onclick=function(){punch('end')};
   $('btnShift').onclick=addShift;
