@@ -113,7 +113,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 <div class="wrap">
 
   <div class="top">
-    <div><h1>WainTaxi<span class="ver">v7.06</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div><h1>WainTaxi<span class="ver">v7.07</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
     <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
   </div>
   <div id="notice"></div>
@@ -176,7 +176,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
       <div class="hint">收入用于赔款、退款、补贴、其他收入等额外进账；<strong>记在这里的就只进经营账</strong>，跟资产有关的钱到「车辆 → 资产流水」另记。提现走「车辆 → 提现账本」。类型不够用去「设置」里加。备注会跟这一笔一起存。</div>
     </div>
 
-    <div class="card">
+    <div class="card" id="sumCard">
       <h2>当日合计（自动）</h2>
       <div class="grid" id="sumBox"></div>
       <div class="split"></div>
@@ -192,7 +192,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
     </div>
     <div class="card">
       <h2>按日汇总</h2>
-      <div class="hint" style="margin:0 0 8px">点日期跳到「记一笔」，拉到最下面看当天全部明细。每页 30 天。</div>
+      <div class="hint" style="margin:0 0 8px">点日期跳到「记一笔」的当日合计，往下看当天全部明细。每页 30 天。</div>
       <div id="dayList"></div>
     </div>
   </section>
@@ -891,7 +891,7 @@ function renderList(){
     '<button class="btn sm" id="listNext"'+(listPage>=pages?' disabled':'')+'>下一页 ›</button></div>';
   $('dayList').innerHTML=h;
   Array.prototype.forEach.call($('dayList').querySelectorAll('[data-jump]'),function(a){
-    a.onclick=function(e){e.preventDefault();curDate=a.getAttribute('data-jump');showTab('add');renderAll()};
+    a.onclick=function(e){e.preventDefault();curDate=a.getAttribute('data-jump');showTab('add');renderAll();var el=document.getElementById('sumCard');if(el)el.scrollIntoView({block:'start'})};
   });
   if($('listPrev'))$('listPrev').onclick=function(){listPage--;renderList()};
   if($('listNext'))$('listNext').onclick=function(){listPage++;renderList()};
