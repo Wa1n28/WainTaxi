@@ -52,7 +52,7 @@
 
 网页本身可直接用浏览器打开。若想做成 App：本项目同时提供 Android 原生壳（Capacitor）打包的 APK，安装后同样在 App 内手动导入 JSON，数据依然只在本机。
 
-- **APK 下载**：<https://Wa1n28.github.io/WainTaxi/WainTaxi.apk>（当前 **v7.15**，系统版本名 `7.15` / versionCode `715`）
+- **APK 下载**：<https://Wa1n28.github.io/WainTaxi/WainTaxi.apk>（当前 **v7.16**，系统版本名 `7.16` / versionCode `716`）
 - 安装后首次打开是空账套：在「设置 → 导入恢复」选 JSON 备份文件即可。
 - 网页版更新后，APK 需要重新打包才会包含新功能；页面左上角版本号可用于区分网页与 App 内版本。
 
