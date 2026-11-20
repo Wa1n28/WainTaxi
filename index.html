@@ -17,7 +17,7 @@ body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 -apple-system
 .top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 2px 12px}
 .top h1{margin:0;font-size:18px;font-weight:600;letter-spacing:.5px}
 .top h1 .ver{font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0;margin-left:6px;vertical-align:middle}
-#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:22px;font-size:14px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999;max-width:80vw;text-align:center;white-space:nowrap}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);background:var(--text);color:var(--bg);padding:10px 18px;border-radius:22px;font-size:14px;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:9999;max-width:calc(100vw - 32px);box-sizing:border-box;text-align:center;white-space:normal;line-height:1.5}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .top .sub{font-size:12px;color:var(--muted)}
 .top .sign{font-size:11px;color:var(--muted);text-align:right;line-height:1.5;white-space:nowrap}
@@ -42,6 +42,8 @@ input[type=date],input[type=month],input[type=time]{min-height:42px}
 .chip{min-height:38px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;font-size:14px;cursor:pointer}
 .chip.on{background:var(--soft);border-color:var(--brand);color:var(--brand);font-weight:600}
 .chip.mini{min-height:30px;padding:3px 10px;font-size:12px}
+.backup-row{flex-wrap:nowrap;gap:6px}
+.backup-row .btn,.backup-row .chip{flex:1 1 0;min-width:0;min-height:42px;padding:8px 4px;font-size:13px;white-space:nowrap}
 /* 封存只读：禁用态要一眼能看出来，避免按钮还是亮绿色像能点 */
 button:disabled,input:disabled,select:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(.5)}
 button:disabled:hover,input:disabled:hover,select:disabled:hover{opacity:.42}
@@ -130,7 +132,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 <div class="wrap">
 
   <div class="top">
-    <div><h1>WainTaxi<span class="ver">v7.13</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div><h1>WainTaxi<span class="ver">v7.15</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
     <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
   </div>
   <div id="notice"></div>
@@ -254,7 +256,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
     <div class="card">
       <h2>数据备份</h2>
       <div class="hint" id="backupState" style="margin:0 0 12px"></div>
-      <div class="row wrap">
+      <div class="row backup-row">
         <button class="btn primary" id="btnBackup">导出备份</button>
         <button class="btn" id="btnRestore">导入恢复</button>
         <button class="chip" id="btnAutoBak">自动备份：关</button>
@@ -1760,7 +1762,7 @@ function bind(){
       alert('自动备份仅安卓 APP 支持，网页版无效。请用安卓 APP 打开，或手动「导出备份」。');return;
     }
     S.autoBackup=!S.autoBackup;save();renderSet();
-    toast(S.autoBackup?'已开启自动备份：运行时每小时一次，保留最近 3 天':'已关闭自动备份');
+    toast(S.autoBackup?'已开启自动备份':'已关闭自动备份');
   };
   $('btnRestore').onclick=function(){$('fileIn').click()};
   $('fileIn').onchange=function(){
