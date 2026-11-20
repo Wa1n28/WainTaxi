@@ -132,7 +132,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 <div class="wrap">
 
   <div class="top">
-    <div><h1>WainTaxi<span class="ver">v7.16</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div><h1>WainTaxi<span class="ver">v7.17</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
     <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
   </div>
   <div id="notice"></div>
@@ -778,14 +778,17 @@ function renderNotice(){
   var g=$('goBackup');
   if(g)g.onclick=function(){showTab('set')};
 }
-function renderVehPick(){
-  var el=$('vehPick');if(!el)return;
+/* 通用「车辆选择按钮」：记一笔 / 明细 / 统计 三处同款，都是选「看哪辆车的账」(viewId)，
+   点按钮统一弹 openVehPicker()。传一个 <button class="vehPickBtn"> 元素进来即可。 */
+function renderVehPickButton(el){
+  if(!el)return;
   var vs=S.vehicles||[],v=statV();
   if(!vs.length){el.innerHTML='<span style="color:var(--muted)">还没有车 · 去「车辆」添加</span>';el.onclick=function(){showTab('asset')};return}
   var sub=v.sealed?'已封存 · 只读':(v.vehicle&&v.vehicle.model||v.model||'');
-  el.innerHTML='<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(v.plate)+(vs.length>1?'':'')+'<span class="vp-sub">'+esc(sub)+'</span></span>'+(vs.length>1?'<span style="color:var(--muted)">▾</span>':'');
+  el.innerHTML='<span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(v.plate)+'<span class="vp-sub">'+esc(sub)+'</span></span>'+(vs.length>1?'<span style="color:var(--muted)">▾</span>':'');
   el.onclick=function(){if(vs.length>1)openVehPicker()};
 }
+function renderVehPick(){renderVehPickButton($('vehPick'))}
 function openVehPicker(){
   var mask=document.createElement('div');mask.className='modal';
   var h='<div class="sheet"><h3>选择车辆</h3>';
@@ -1299,20 +1302,15 @@ function bindAssetDetail(v){
 function kvHTML(b){
   return b.map(function(a){return '<div class="kv'+(a[3]?' kvlink':'')+'"'+(a[3]?' data-kv="'+a[3]+'"':'')+'><div class="k">'+a[0]+'</div><div class="v">'+a[1]+' <small>'+a[2]+'</small>'+(a[3]?' <span class="kvarrow">›</span>':'')+'</div></div>'}).join('');
 }
-function vehicleChipsHTML(selId,boxId,infoId){
+/* 明细 / 统计页的车辆选择：与「记一笔」同款按钮 + 同一个弹层，三处统一。 */
+function vehicleChipsHTML(btnId,boxId,infoId){
   var vs=S.vehicles||[],v=statV();
-  if(vs.length<=1){
-    $(boxId).innerHTML=vs.length?'<span style="font-size:15px;font-weight:600">'+esc(v.plate)+(v.model||v.vehicle&&v.vehicle.model?' · '+esc(v.model||v.vehicle.model):'')+'</span>':'<span class="empty" style="padding:0">还没有车</span>';
-  }else{
-    $(boxId).innerHTML='<select id="'+selId+'" style="flex:1 1 180px">'+vs.map(function(x){
-      return '<option value="'+x.id+'"'+(x.id===v.id?' selected':'')+'>'+esc(x.plate)+(x.model||x.vehicle&&x.vehicle.model?' · '+esc(x.model||x.vehicle.model):'')+(x.sealed?'（已封存）':'')+'</option>';
-    }).join('')+'</select>';
-    $(selId).onchange=function(){viewId=this.value;renderAll()};
-  }
+  $(boxId).innerHTML='<div style="flex:1 1 100%;min-width:0"><button class="vehPickBtn" id="'+btnId+'"></button></div>';
+  renderVehPickButton($(btnId));
   $(infoId).textContent=v.plate+' · '+(v.model||v.vehicle&&v.vehicle.model||'')+(v.sealed?'（已封存 · 只读）':'')+' · 共 '+Object.keys(v.days||{}).length+' 天记录 · 这里选的是「看哪辆车的账」，不改变当前经营车';
 }
-function renderVehicles(){vehicleChipsHTML('vehSel','vehicleChips','vehicleInfo')}
-function renderListVehicles(){vehicleChipsHTML('listVehSel','listVehChips','listVehInfo')}
+function renderVehicles(){vehicleChipsHTML('vehSelBtn','vehicleChips','vehicleInfo')}
+function renderListVehicles(){vehicleChipsHTML('listVehSelBtn','listVehChips','listVehInfo')}
 function renderRepInputs(){
   var m=reportMode,h='';
   if(m==='day')h='<input type="date" id="repDay" value="'+(repDay||today())+'">';
