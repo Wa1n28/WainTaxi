@@ -130,7 +130,7 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
 <div class="wrap">
 
   <div class="top">
-    <div><h1>WainTaxi<span class="ver">v7.12</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
+    <div><h1>WainTaxi<span class="ver">v7.13</span></h1><div class="sub">网约车也是生意，就得有账</div></div>
     <div class="sign">闲驰京尘支架人<br>@Wa1n28</div>
   </div>
   <div id="notice"></div>
@@ -257,9 +257,10 @@ nav button .dot{display:block;width:5px;height:5px;border-radius:50%;background:
       <div class="row wrap">
         <button class="btn primary" id="btnBackup">导出备份</button>
         <button class="btn" id="btnRestore">导入恢复</button>
+        <button class="chip" id="btnAutoBak">自动备份：关</button>
       </div>
       <input type="file" id="fileIn" accept=".json,application/json" class="hide">
-      <div class="hint">数据只存在这台设备的浏览器里。<strong>清除浏览器数据会丢</strong>，建议每周点一次「导出备份」，把 JSON 文件存到手机下载目录。</div>
+      <div class="hint">数据只存在这台设备。<strong>安卓 APP</strong> 可开「自动备份」：运行时每小时备份一次，保留最近 3 天，存到手机「下载」目录；<strong>网页版不支持自动备份</strong>，请手动「导出备份」。</div>
     </div>
     <div class="card">
       <h2>平台目录（改名 / 排序 / 启停）</h2>
@@ -318,7 +319,7 @@ var VEH_PRESET=[
   {id:'v_qin',plate:'京AEB9506',model:'比亚迪秦LEV545超越',sealed:false},
   {id:'v_ark',plate:'京BD65672',model:'极狐αs5',sealed:true}
 ];
-var DEFAULT={v:2,activeVehicleId:'',vehicles:[],lastBackup:null};
+var DEFAULT={v:2,activeVehicleId:'',vehicles:[],lastBackup:null,autoBackup:false};
 var S,curDate,selPid=null,selType='停车',selKind='支出',storageOK=true,reportMode='month',reportFrom='',reportTo='';
 var viewId='';   // 「当前查看车」：空=跟随当前经营车。查看可与经营不同（封存车只读查看），绝不改变 activeVehicleId
 var repDay='',repWeek='',repMonth='',repYear='',repQ=1;   // 统计各周期输入的选择（空=默认今天）
@@ -470,6 +471,7 @@ function norm(o){
     s.vehicles.forEach(function(v){if(v.id===o.activeVehicleId)ok=true});
     s.activeVehicleId=ok?o.activeVehicleId:s.vehicles[0].id;
     if(o.lastBackup)s.lastBackup=o.lastBackup;
+    s.autoBackup=!!o.autoBackup;
   }else if(o&&o.days){
     // v1 备份迁移：原数据全部进一个新建账套（默认主车，可改名）
     var b=blankVehicle({id:'v_'+uid(),plate:VEH_PRESET[0].plate,model:VEH_PRESET[0].model,sealed:false});
@@ -479,6 +481,7 @@ function norm(o){
     b.days=normDays(o.days);
     s.vehicles=[b];s.activeVehicleId=b.id;
     if(o.lastBackup)s.lastBackup=o.lastBackup;
+    s.autoBackup=!!o.autoBackup;
   }
   return bindMirror(s);
 }
@@ -1508,6 +1511,8 @@ function renderRotate(from,to){
 function renderSet(){
   var n=S.lastBackup?daysSince(String(S.lastBackup).slice(0,10)):null;
   $('backupState').innerHTML=n===null?'<strong>还没有备份过。</strong>建议现在就导出一次。':('上次备份：'+String(S.lastBackup).slice(0,10)+'（'+n+' 天前）'+(n>=7?' · <strong style="color:var(--danger)">该备份了</strong>':''));
+  var ab=$('btnAutoBak');
+  if(ab){ab.textContent='自动备份：'+(S.autoBackup?'开':'关');ab.className=S.autoBackup?'chip on':'chip'}
   $('platAdmin').innerHTML=S.platforms.map(function(p,i){
     var usedN=0;
     Object.keys(S.days||{}).forEach(function(k){
@@ -1587,6 +1592,73 @@ function download(name,text,mime){
     setTimeout(function(){URL.revokeObjectURL(url);a.remove()},1500);
     return true;
   }catch(e){return false}
+}
+/* 增量合并：把导入数据 o 并进当前 S，本地已有优先、只增不覆盖。
+   返回 {newDays,newRec,dup} 统计。粒度=账套(id)+日期+记录(id)。 */
+function mergeImport(o){
+  var imp=norm(o);                       // 走同一套规范化，保证结构一致
+  var stat={newDays:0,newRec:0,dup:0,newVeh:0};
+  // 日期内某类记录按 id 合并：本机已有 id 保留，导入新 id 补入
+  function mergeList(local,inc){
+    var ids={};(local||[]).forEach(function(x){if(x&&x.id)ids[x.id]=1});
+    (inc||[]).forEach(function(x){
+      if(!x)return;
+      if(x.id&&ids[x.id]){stat.dup++;return}
+      if(x.id)ids[x.id]=1;
+      local.push(x);stat.newRec++;
+    });
+  }
+  imp.vehicles.forEach(function(iv){
+    // 找本机同 id 账套
+    var lv=null;
+    for(var i=0;i<S.vehicles.length;i++)if(S.vehicles[i].id===iv.id){lv=S.vehicles[i];break}
+    if(!lv){                             // 本机没有这台车 → 整台加入
+      S.vehicles.push(iv);stat.newVeh++;
+      Object.keys(iv.days||{}).forEach(function(){stat.newDays++});
+      var cnt=0;Object.keys(iv.days||{}).forEach(function(d){
+        var x=iv.days[d];cnt+=(x.flows||[]).length+(x.costs||[]).length+(x.shifts||[]).length;
+      });
+      stat.newRec+=cnt;
+      return;
+    }
+    // 同 id 账套 → 逐日合并
+    Object.keys(iv.days||{}).forEach(function(d){
+      var iday=iv.days[d];
+      if(!lv.days[d]){                   // 本机没有这天 → 整日加入
+        lv.days[d]=iday;stat.newDays++;
+        stat.newRec+=(iday.flows||[]).length+(iday.costs||[]).length+(iday.shifts||[]).length;
+        return;
+      }
+      var ld=lv.days[d];
+      if(!Array.isArray(ld.flows))ld.flows=[];
+      if(!Array.isArray(ld.costs))ld.costs=[];
+      if(!Array.isArray(ld.shifts))ld.shifts=[];
+      mergeList(ld.flows,iday.flows);
+      mergeList(ld.costs,iday.costs);
+      mergeList(ld.shifts,iday.shifts);
+      // 打卡时间：本机为空才用导入的
+      if(!ld.clock&&iday.clock)ld.clock=iday.clock;
+    });
+    // 列表类：平台/类型/资产/保险/ prep/withdrawals 按 id 或值补缺
+    ['platforms','assets','insurances','prepLedger','withdrawals'].forEach(function(k){
+      var arr=Array.isArray(lv[k])?lv[k]:(lv[k]=[]);
+      var inc=Array.isArray(iv[k])?iv[k]:[];
+      var seen={};arr.forEach(function(x){if(x&&x.id)seen[x.id]=1;else if(typeof x==='string')seen[x]=1});
+      inc.forEach(function(x){
+        var key=x&&x.id||(typeof x==='string'?x:null);
+        if(key&&seen[key]){stat.dup++;return}
+        if(key)seen[key]=1;arr.push(x);stat.newRec++;
+      });
+    });
+    ['costTypes','incomeTypes','assetCats','inflowCats'].forEach(function(k){
+      var arr=Array.isArray(lv[k])?lv[k]:(lv[k]=[]);
+      (iv[k]||[]).forEach(function(t){if(arr.indexOf(t)<0){arr.push(t);stat.newRec++}else stat.dup++});
+    });
+    // recon 按 key 补缺（本机已有优先）
+    if(iv.recon)lv.recon=Object.assign({},iv.recon,lv.recon||{});
+  });
+  if(o.lastBackup&&(!S.lastBackup||o.lastBackup>S.lastBackup))S.lastBackup=o.lastBackup;
+  return stat;
 }
 function backup(){
   var name='WainTaxi_备份_'+today()+'.json';
@@ -1683,17 +1755,48 @@ function bind(){
     b.onclick=function(){reportMode=b.getAttribute('data-mode');renderStats()};
   });
   $('btnBackup').onclick=backup;
+  $('btnAutoBak').onclick=function(){
+    if(!(window.WainTaxiBridge&&typeof window.WainTaxiBridge.saveFile==='function')){
+      alert('自动备份仅安卓 APP 支持，网页版无效。请用安卓 APP 打开，或手动「导出备份」。');return;
+    }
+    S.autoBackup=!S.autoBackup;save();renderSet();
+    toast(S.autoBackup?'已开启自动备份：运行时每小时一次，保留最近 3 天':'已关闭自动备份');
+  };
   $('btnRestore').onclick=function(){$('fileIn').click()};
   $('fileIn').onchange=function(){
     var f=this.files&&this.files[0];if(!f)return;
     var r=new FileReader();
     r.onload=function(){
-      try{
-        var o=JSON.parse(r.result);
-        if(!o||(!o.days&&!o.vehicles))throw new Error('格式不对');
-        if(!confirm('用这份备份覆盖当前全部数据？'))return;
-        S=norm(o);viewId='';listPage=1;save();renderAll();alert('已恢复：'+S.vehicles.length+' 个账套，当前 '+Object.keys(S.days).length+' 天记录');
-      }catch(e){alert('导入失败：不是有效的备份文件')}
+      var o;
+      try{o=JSON.parse(r.result);if(!o||(!o.days&&!o.vehicles))throw new Error('格式不对')}
+      catch(e){alert('导入失败：不是有效的备份文件');return}
+      // 模式选择弹层：默认增量合并
+      var mask=document.createElement('div');mask.className='modal';
+      var impDays=(o.vehicles?o.vehicles.reduce(function(a,v){return a+Object.keys(v.days||{}).length},0):Object.keys(o.days||{}).length);
+      mask.innerHTML='<div class="sheet"><h3>导入方式</h3>'+
+        '<div class="warn">这份文件含 <b>'+(o.vehicles?o.vehicles.length:1)+'</b> 个账套 / <b>'+impDays+'</b> 天记录。<br>'+
+        '<b>增量合并</b>：只补进本机没有的记录，已有的不动（推荐）。<br>'+
+        '<b>全量覆盖</b>：清空当前数据，完全用这份文件替换。</div>'+
+        '<button class="btn primary full" id="impMerge">增量合并（推荐）</button>'+
+        '<button class="btn full" id="impOverwrite" style="margin-top:8px">全量覆盖</button>'+
+        '<button class="btn ghost full" id="impCancel" style="margin-top:8px">取消</button></div>';
+      document.body.appendChild(mask);
+      function close(){mask.remove()}
+      mask.onclick=function(e){if(e.target===mask)close()};
+      $('impCancel').onclick=close;
+      $('impOverwrite').onclick=function(){
+        if(!confirm('确定全量覆盖？当前数据会被这份文件完全替换，先导出备份更保险。'))return;
+        try{
+          S=norm(o);viewId='';listPage=1;save();close();renderAll();
+          alert('已全量恢复：'+S.vehicles.length+' 个账套，'+Object.keys(S.days).length+' 天记录');
+        }catch(e){alert('导入失败：'+e.message)}
+      };
+      $('impMerge').onclick=function(){
+        try{
+          var st=mergeImport(o);viewId='';save();close();renderAll();
+          alert('增量合并完成：\n新增账套 '+st.newVeh+' 个\n新增 '+st.newDays+' 天\n新增 '+st.newRec+' 条记录\n跳过重复 '+st.dup+' 条');
+        }catch(e){alert('合并失败：'+e.message)}
+      };
     };
     r.readAsText(f,'utf-8');this.value='';
   };
